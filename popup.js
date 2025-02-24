@@ -377,10 +377,14 @@ function applySavedHighlights(element, originalText) {
 
 
 function addClipboardListItem(text,item_color) {
+
+    // 1] Creating elements
+
     let { sourceUrl, imageUrl, isVideo, type } = getThumbnail(text);
     console.log("Thumbnail details:", { sourceUrl, imageUrl, isVideo, type });
     let listItem = document.createElement("li");
     let iconImage = document.createElement("img");
+
     if (type === 'youtube') {
         iconImage.src = './images/youtube_icon.png';
     } else if (type === 'url') {
@@ -388,23 +392,31 @@ function addClipboardListItem(text,item_color) {
     } else {
         iconImage.src = './images/default_icon.png';  // Default icon for text or unknown types
     }
+
+    listItem.classList.add("listitem");
     if (type === 'youtube') listItem.classList.add("youtube-link");
     else if (type === 'url') listItem.classList.add("general-link");
     else listItem.classList.add("text-entry");
-       let listDiv = document.createElement("div"),
-       //highlightButton = document.createElement("button"),
-        toolsDiv = document.createElement("div"),
-        deleteDiv = document.createElement("div"),
-        editDiv = document.createElement("div"),
-        colorTabsDiv = document.createElement("div"),
-        contentDiv = document.createElement("div"),
-        editImage = document.createElement("img"),
-        upArrowImage = document.createElement("img"),
-        downArrowImage = document.createElement("img"),
-        upArrowDiv = document.createElement("div"),
-        downArrowDiv = document.createElement("div");
-        summDiv = document.createElement("div")
-        citDiv = document.createElement("div")
+    
+    let contentDiv = document.createElement("div"),
+    listDiv = document.createElement("div"),
+    toolsDiv = document.createElement("div"),
+    
+    editDiv = document.createElement("div"),
+    deleteDiv = document.createElement("div"),
+    colorTabsDiv = document.createElement("div"),
+    upArrowDiv = document.createElement("div"),
+    downArrowDiv = document.createElement("div"),
+    citDiv = document.createElement("div"),
+    
+    editImage = document.createElement("img"),
+    deleteImage = document.createElement("img"),
+    citImage = document.createElement("img"),
+    upArrowImage = document.createElement("img"),
+    downArrowImage = document.createElement("img");
+
+    //highlightButton = document.createElement("button"),
+    // summDiv = document.createElement("div")
 
         // Set up highlight button
     //highlightButton.textContent = "Highlight";
@@ -415,14 +427,83 @@ function addClipboardListItem(text,item_color) {
     // Apply existing highlights from storage if any
     //applySavedHighlights(listPara, text);
 
+    // 2] Adding para and tools 
+
+    let listPara = document.createElement("p");
+    listPara.style.color = item_color;
+    listPara.style.height = 'auto';
+    listPara.style.whiteSpace = 'pre-wrap'; // Enables text wrapping
+    listPara.classList.add("data");
+    let popupLink = document.createElement('a');
+    let imagePopup = document.createElement('img');
+    prevText = text;
+    let listText = document.createTextNode(text);
+    listPara.appendChild(listText)
+    listDiv.appendChild(listPara);
+    listDiv.classList.add("list-div");
+    contentDiv.appendChild(listDiv);
+
+    // Tools div will contain tools such as edit,delete, up/down arrows and so on
+    toolsDiv.classList.add("tools");
+
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.classList.add('checkbox');
+    editImage.src = './images/pencil.png';
+    editImage.classList.add("edit");
+    deleteImage.src = './images/delete-note.png';
+    deleteImage.classList.add("delete");
+    citImage.src = './images/cite2.png';
+    citImage.classList.add("citation");
+    upArrowImage.src = './images/upArrow.png';
+    upArrowImage.classList.add("upArrow");
+    downArrowImage.src = '/images/downArrow.png';
+    downArrowImage.classList.add("downArrow");
+    // summImage.src = './images/summarizer.png';
+    // summImage.classList.add("summarize");
+
+    editDiv.appendChild(editImage);
+    deleteDiv.appendChild(deleteImage);
+    var listOfTabColors = document.createElement('select');
+    listOfTabColors.classList.add('dropdown');
+    listOfTabColors.setAttribute("name", "color");
+    listOfTabColors.setAttribute("id", "color");
+    listOfTabColors.classList.add("color");
+    listOfTabColors.classList.add("dropdown");
+    listOfTabColors.style.width = "15px";
+    listOfTabColors.style.height = "32px";
+    listOfTabColors.style.margin = "13.5px";
+    colorTabsDiv.appendChild(listOfTabColors);
+    citDiv.appendChild(citImage);
+    upArrowDiv.appendChild(upArrowImage);
+    downArrowDiv.appendChild(downArrowImage);
+
+    toolsDiv.appendChild(checkbox);
+    toolsDiv.appendChild(editDiv);
+    toolsDiv.appendChild(deleteDiv);
+    toolsDiv.appendChild(colorTabsDiv);
+    toolsDiv.appendChild(citDiv);    
+    toolsDiv.appendChild(upArrowDiv);
+    toolsDiv.appendChild(downArrowDiv);
+    contentDiv.appendChild(toolsDiv);
+
+    // 3] Adding tooltips 
+
+    listPara.setAttribute("data-toggle", "tooltip");
+    listPara.setAttribute("data-placement", "bottom");
+    listPara.setAttribute("title", "Click to copy the below text:\n" + text + "\n" + "Word count:\n"+text.split(' ').length);
+
     editImage.setAttribute("data-toggle", "tooltip");
     editImage.setAttribute("data-placement", "bottom");
     editImage.setAttribute("title", "Click to edit the text entry!");
 
-    let deleteImage = document.createElement("img");
     deleteImage.setAttribute("data-toggle", "tooltip");
     deleteImage.setAttribute("data-placement", "bottom");
     deleteImage.setAttribute("title", "Click to delete the text entry!");
+
+    citImage.setAttribute("data-toggle", "tooltip");
+    citImage.setAttribute("data-placement", "bottom");
+    citImage.setAttribute("title", "Click to generate Citations!");
 
     upArrowImage.setAttribute("data-toggle", "tooltip");
     upArrowImage.setAttribute("data-placement", "bottom");
@@ -432,65 +513,13 @@ function addClipboardListItem(text,item_color) {
     downArrowImage.setAttribute("data-placement", "bottom");
     downArrowImage.setAttribute("title", "Click to move down the text entry!");
 
-    summImage = document.createElement("img");
-    summImage.setAttribute("data-toggle", "tooltip");
-    summImage.setAttribute("data-placement", "bottom");
-    summImage.setAttribute("title", "Click to summarize the text entry!");
+    // summImage = document.createElement("img");
+    // summImage.setAttribute("data-toggle", "tooltip");
+    // summImage.setAttribute("data-placement", "bottom");
+    // summImage.setAttribute("title", "Click to summarize the text entry!");
 
+    // 4] Event Listeners
 
-    citImage = document.createElement("img");
-    citImage.setAttribute("data-toggle", "tooltip");
-    citImage.setAttribute("data-placement", "bottom");
-    citImage.setAttribute("title", "Click to generate Citations!");
-
-    let listPara = document.createElement("p");
-    let listText = document.createTextNode(text);
-    listPara.style.color = item_color;
-    listPara.style.height = 'auto';
-    listPara.style.whiteSpace = 'pre-wrap'; // Enables text wrapping
-    listPara.setAttribute("data-toggle", "tooltip");
-    listPara.setAttribute("data-placement", "bottom");
-    listPara.setAttribute("title", "Click to copy the below text:\n" + text + "\n" + "Word count:\n"+text.split(' ').length);
-    listPara.classList.add("data");
-    listItem.classList.add("listitem");
-    let popupLink = document.createElement('a');
-    let imagePopup = document.createElement('img');
-    prevText = text;
-
-    if (imageUrl.length > 0) {
-        console.log("IMage Url found")
-        if(imageUrl.includes("youtube.com"))
-        {
-            imagePopup.src = './images/youtube_icon.png';
-            imagePopup.style['margin-left'] = '10%';
-            imagePopup.style['margin-top'] = '50%';
-        }
-        else
-        {
-            imagePopup.src = './images/url_icon.png';
-            imagePopup.style['margin-left'] = '10%';
-            imagePopup.style['margin-top'] = '50%';
-        }
-        if (!isVideo) {
-            imagePopup.style.width = '32px'
-            imagePopup.style.height = '32px';
-
-        }
-        else {
-            listPara.style['max-width'] = '12rem';
-            imagePopup.style.width = '32px';
-            imagePopup.style.height = '32px';
-
-        }
-        popupLink.href = sourceUrl;
-        popupLink.target = '_blank';
-        popupLink.appendChild(imagePopup);
-        listDiv.appendChild(popupLink);
-
-    }
-
-    listPara.appendChild(listText)
-    listDiv.appendChild(listPara);
     listPara.addEventListener('focusout', (event) => {
         event.target.setAttribute("contenteditable", "false");
         listPara.style.height = '4em';
@@ -507,52 +536,26 @@ function addClipboardListItem(text,item_color) {
             });
         })
     })
-    listDiv.classList.add("list-div");
-    contentDiv.appendChild(listDiv);
 
+    editImage.addEventListener('click', (event) => {
+        console.log("Edit button clicked");
+        prevText = listPara.textContent;
+        console.log(prevText);
+        listPara.setAttribute("contenteditable", "true");
 
-    // Tools div will contain tools such as edit,delete, up/down arrows and so on
-    toolsDiv.classList.add("tools");
-    contentDiv.appendChild(toolsDiv);
+        listPara.style.height = 'auto';
+        listPara.style.whiteSpace = 'break-spaces';
+        listPara.focus();
+        // listDiv.style.borderColor = "red";
+        // listPara.style.backgroundColor = "grey"
+        // listPara.style.height = "100px"
+        //listPara.focus();
+    })
 
-    editImage.src = './images/pencil.png';
-    editImage.classList.add("edit");
-    deleteImage.src = './images/delete-note.png';
-    deleteImage.classList.add("delete");
-    upArrowImage.src = './images/upArrow.png';
-    upArrowImage.classList.add("upArrow");
-    downArrowImage.src = '/images/downArrow.png';
-    downArrowImage.classList.add("downArrow");
-    // summImage.src = './images/summarizer.png';
-    // summImage.classList.add("summarize");
-
-    citImage.src = './images/cite2.png';
-    citImage.classList.add("citation");
-
-    var checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.classList.add('checkbox');
-    toolsDiv.appendChild(checkbox);
-
-    editDiv.appendChild(editImage);
-    toolsDiv.appendChild(editDiv);
-    deleteDiv.appendChild(deleteImage);
-    toolsDiv.appendChild(deleteDiv);
-
-    var listOfTabColors = document.createElement('select');
-    listOfTabColors.classList.add('dropdown');
-    listOfTabColors.setAttribute("name", "color");
-    listOfTabColors.setAttribute("id", "color");
-    listOfTabColors.classList.add("color");
-    listOfTabColors.classList.add("dropdown");
-    listOfTabColors.style.width = "15px";
-    listOfTabColors.style.height = "32px";
-    listOfTabColors.style.margin = "13.5px";
-    colorTabsDiv.appendChild(listOfTabColors);
-    toolsDiv.appendChild(colorTabsDiv);
-
-    citDiv.appendChild(citImage);
-    toolsDiv.appendChild(citDiv);
+    deleteImage.addEventListener('click', (event) => {
+        console.log("Delete clicked");
+        deleteElem(text);
+    })
 
     // Create choices
     let colorchoices = [];
@@ -599,36 +602,8 @@ function addClipboardListItem(text,item_color) {
     });
 
 
-    upArrowDiv.appendChild(upArrowImage);
-    toolsDiv.appendChild(upArrowDiv);
-    downArrowDiv.appendChild(downArrowImage);
-    toolsDiv.appendChild(downArrowDiv);
     //summDiv.appendChild(summImage);
     //contentDiv.appendChild(summDiv);
-
-    contentDiv.classList.add("content");
-    listItem.appendChild(contentDiv);
-
-    _clipboardList.appendChild(listItem);
-    editImage.addEventListener('click', (event) => {
-        console.log("Edit button clicked");
-        prevText = listPara.textContent;
-        console.log(prevText);
-        listPara.setAttribute("contenteditable", "true");
-
-        listPara.style.height = 'auto';
-        listPara.style.whiteSpace = 'break-spaces';
-        listPara.focus();
-        // listDiv.style.borderColor = "red";
-        // listPara.style.backgroundColor = "grey"
-        // listPara.style.height = "100px"
-        //listPara.focus();
-    })
-
-    deleteImage.addEventListener('click', (event) => {
-        console.log("Delete clicked");
-        deleteElem(text);
-    })
 
 
     function doDjangoCall(type, url, data, callback) {
@@ -659,33 +634,33 @@ function addClipboardListItem(text,item_color) {
       }
 
 
-            citImage.addEventListener('click', (event) => {
-                console.log("Citation button clicked");
-                let inputText = listPara.textContent.trim();
-              
-                doDjangoCall(
-                  "POST",
-                  "http://127.0.0.1:8000/text/getcitation",
-                  { 'citation_input': inputText },
-                  function (data) {
-                    const citationText = data;
-              
-                    if (citationText) {
-                      // Copy the citation to the clipboard
-                      navigator.clipboard.writeText(citationText).then(function() {
-                        console.log('Citation copied to clipboard');
-                        showSnackbar('Citation copied to clipboard!');
-                      }, function(err) {
-                        console.error('Could not copy citation: ', err);
-                        showSnackbar('Failed to copy citation to clipboard.');
-                      });
-                    } else {
-                      console.error('Citation generation failed:', data);
-                      showSnackbar('Citation generation failed.');
-                    }
-                  }
-                );
-              });
+    citImage.addEventListener('click', (event) => {
+        console.log("Citation button clicked");
+        let inputText = listPara.textContent.trim();
+        
+        doDjangoCall(
+            "POST",
+            "http://127.0.0.1:8000/text/getcitation",
+            { 'citation_input': inputText },
+            function (data) {
+            const citationText = data;
+        
+            if (citationText) {
+                // Copy the citation to the clipboard
+                navigator.clipboard.writeText(citationText).then(function() {
+                console.log('Citation copied to clipboard');
+                showSnackbar('Citation copied to clipboard!');
+                }, function(err) {
+                console.error('Could not copy citation: ', err);
+                showSnackbar('Failed to copy citation to clipboard.');
+                });
+            } else {
+                console.error('Citation generation failed:', data);
+                showSnackbar('Citation generation failed.');
+            }
+            }
+        );
+        });
 
 
 
@@ -795,6 +770,44 @@ function addClipboardListItem(text,item_color) {
         x.className = "show";
         setTimeout(function () { x.className = x.className.replace("show", ""); }, 300);
     });
+
+    // 5] Other
+
+    if (imageUrl.length > 0) {
+        console.log("IMage Url found")
+        if(imageUrl.includes("youtube.com"))
+        {
+            imagePopup.src = './images/youtube_icon.png';
+            imagePopup.style['margin-left'] = '10%';
+            imagePopup.style['margin-top'] = '50%';
+        }
+        else
+        {
+            imagePopup.src = './images/url_icon.png';
+            imagePopup.style['margin-left'] = '10%';
+            imagePopup.style['margin-top'] = '50%';
+        }
+        if (!isVideo) {
+            imagePopup.style.width = '32px'
+            imagePopup.style.height = '32px';
+
+        }
+        else {
+            listPara.style['max-width'] = '12rem';
+            imagePopup.style.width = '32px';
+            imagePopup.style.height = '32px';
+
+        }
+        popupLink.href = sourceUrl;
+        popupLink.target = '_blank';
+        popupLink.appendChild(imagePopup);
+        listDiv.appendChild(popupLink);
+
+    }
+
+    contentDiv.classList.add("content");
+    listItem.appendChild(contentDiv);
+    _clipboardList.appendChild(listItem);
 }
 
 // Add event listener for the new summarization button
