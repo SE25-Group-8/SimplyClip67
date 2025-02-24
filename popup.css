@@ -49,7 +49,7 @@ ul li{
     border-bottom-color: #ec9358;
     border-right: 1px solid;
     box-shadow: 0.3px 0 5px -2.1px rgba(0,0,0,0.5);
-    cursor: pointer;
+    /* cursor: pointer; */
     white-space: nowrap;
     -webkit-border-radius: 10px; /* Setting cross browser rounded edges*/
     -moz-border-radius: 10px;
@@ -524,9 +524,8 @@ ul li {
 
 /* Increase size of the checkbox */
 .checkbox {
-    width: 20px; /* Increase width */
-    height: 20px; /* Increase height */
-    margin-right: 5px; /* Add margin for spacing */
+    width: 25px; /* Increase width */
+    height: 25px; /* Increase height */
 }
 
 /* CSS CHANGES FOR FIXING IMAGE CSS */
@@ -572,3 +571,22 @@ ul li {
     padding: 8px;
     justify-content: space-between;
  }
+
+.tools .tool-wrapper{
+    height: 35px;
+    width: 35px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+ }
+
+.tools .tool-wrapper:hover{
+    background-color: lightgray;
+}
+
+.tool-wrapper img{
+    height: 25px;
+    width: 25px;
+}

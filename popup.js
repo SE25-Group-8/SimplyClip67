@@ -402,6 +402,7 @@ function addClipboardListItem(text,item_color) {
     listDiv = document.createElement("div"),
     toolsDiv = document.createElement("div"),
     
+    selectDiv = document.createElement("div")
     editDiv = document.createElement("div"),
     deleteDiv = document.createElement("div"),
     colorTabsDiv = document.createElement("div"),
@@ -449,19 +450,15 @@ function addClipboardListItem(text,item_color) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.classList.add('checkbox');
-    editImage.src = './images/pencil.png';
-    editImage.classList.add("edit");
-    deleteImage.src = './images/delete-note.png';
-    deleteImage.classList.add("delete");
-    citImage.src = './images/cite2.png';
-    citImage.classList.add("citation");
-    upArrowImage.src = './images/upArrow.png';
-    upArrowImage.classList.add("upArrow");
-    downArrowImage.src = '/images/downArrow.png';
-    downArrowImage.classList.add("downArrow");
+    editImage.src = './images/flaticons/edit-icon.png';
+    deleteImage.src = './images/flaticons/delete-icon.png';
+    citImage.src = './images/flaticons/cite-icon.png';
+    upArrowImage.src = './images/flaticons/double-up-arrow.png';
+    downArrowImage.src = '/images/flaticons/double-down-arrow.png';
     // summImage.src = './images/summarizer.png';
     // summImage.classList.add("summarize");
 
+    selectDiv.appendChild(checkbox);
     editDiv.appendChild(editImage);
     deleteDiv.appendChild(deleteImage);
     var listOfTabColors = document.createElement('select');
@@ -470,15 +467,21 @@ function addClipboardListItem(text,item_color) {
     listOfTabColors.setAttribute("id", "color");
     listOfTabColors.classList.add("color");
     listOfTabColors.classList.add("dropdown");
-    listOfTabColors.style.width = "15px";
-    listOfTabColors.style.height = "32px";
-    listOfTabColors.style.margin = "13.5px";
+    listOfTabColors.style.width = "20px";
+    listOfTabColors.style.height = "25px";
     colorTabsDiv.appendChild(listOfTabColors);
     citDiv.appendChild(citImage);
     upArrowDiv.appendChild(upArrowImage);
     downArrowDiv.appendChild(downArrowImage);
 
-    toolsDiv.appendChild(checkbox);
+    selectDiv.classList.add("tool-wrapper");
+    editDiv.classList.add("tool-wrapper");
+    deleteDiv.classList.add("tool-wrapper");
+    colorTabsDiv.classList.add("tool-wrapper");
+    citDiv.classList.add("tool-wrapper");
+    upArrowDiv.classList.add("tool-wrapper");
+    downArrowDiv.classList.add("tool-wrapper");
+    toolsDiv.appendChild(selectDiv);
     toolsDiv.appendChild(editDiv);
     toolsDiv.appendChild(deleteDiv);
     toolsDiv.appendChild(colorTabsDiv);
@@ -493,25 +496,33 @@ function addClipboardListItem(text,item_color) {
     listPara.setAttribute("data-placement", "bottom");
     listPara.setAttribute("title", "Click to copy the below text:\n" + text + "\n" + "Word count:\n"+text.split(' ').length);
 
-    editImage.setAttribute("data-toggle", "tooltip");
-    editImage.setAttribute("data-placement", "bottom");
-    editImage.setAttribute("title", "Click to edit the text entry!");
+    selectDiv.setAttribute("data-toggle", "tooltip");
+    selectDiv.setAttribute("data-placement", "bottom");
+    selectDiv.setAttribute("title", "Select Entry");
+    
+    editDiv.setAttribute("data-toggle", "tooltip");
+    editDiv.setAttribute("data-placement", "bottom");
+    editDiv.setAttribute("title", "Edit entry");
 
-    deleteImage.setAttribute("data-toggle", "tooltip");
-    deleteImage.setAttribute("data-placement", "bottom");
-    deleteImage.setAttribute("title", "Click to delete the text entry!");
+    deleteDiv.setAttribute("data-toggle", "tooltip");
+    deleteDiv.setAttribute("data-placement", "bottom");
+    deleteDiv.setAttribute("title", "Delete Entry");
 
-    citImage.setAttribute("data-toggle", "tooltip");
-    citImage.setAttribute("data-placement", "bottom");
-    citImage.setAttribute("title", "Click to generate Citations!");
+    colorTabsDiv.setAttribute("data-toggle", "tooltip");
+    colorTabsDiv.setAttribute("data-placement", "bottom");
+    colorTabsDiv.setAttribute("title", "Change color");
 
-    upArrowImage.setAttribute("data-toggle", "tooltip");
-    upArrowImage.setAttribute("data-placement", "bottom");
-    upArrowImage.setAttribute("title", "Click to move up the text entry!");
+    citDiv.setAttribute("data-toggle", "tooltip");
+    citDiv.setAttribute("data-placement", "bottom");
+    citDiv.setAttribute("title", "Generate Citations");
 
-    downArrowImage.setAttribute("data-toggle", "tooltip");
-    downArrowImage.setAttribute("data-placement", "bottom");
-    downArrowImage.setAttribute("title", "Click to move down the text entry!");
+    upArrowDiv.setAttribute("data-toggle", "tooltip");
+    upArrowDiv.setAttribute("data-placement", "bottom");
+    upArrowDiv.setAttribute("title", "Move Up");
+
+    downArrowDiv.setAttribute("data-toggle", "tooltip");
+    downArrowDiv.setAttribute("data-placement", "bottom");
+    downArrowDiv.setAttribute("title", "Move Down");
 
     // summImage = document.createElement("img");
     // summImage.setAttribute("data-toggle", "tooltip");
@@ -537,7 +548,7 @@ function addClipboardListItem(text,item_color) {
         })
     })
 
-    editImage.addEventListener('click', (event) => {
+    editDiv.addEventListener('click', (event) => {
         console.log("Edit button clicked");
         prevText = listPara.textContent;
         console.log(prevText);
@@ -552,7 +563,7 @@ function addClipboardListItem(text,item_color) {
         //listPara.focus();
     })
 
-    deleteImage.addEventListener('click', (event) => {
+    deleteDiv.addEventListener('click', (event) => {
         console.log("Delete clicked");
         deleteElem(text);
     })
@@ -634,7 +645,7 @@ function addClipboardListItem(text,item_color) {
       }
 
 
-    citImage.addEventListener('click', (event) => {
+    citDiv.addEventListener('click', (event) => {
         console.log("Citation button clicked");
         let inputText = listPara.textContent.trim();
         
@@ -664,7 +675,7 @@ function addClipboardListItem(text,item_color) {
 
 
 
-    upArrowImage.addEventListener('click', (event) => {
+    upArrowDiv.addEventListener('click', (event) => {
     console.log("Up arrow clicked");
     chrome.storage.sync.get(['list','listcolor'], clipboard => {
         let list = clipboard.list;
@@ -704,7 +715,7 @@ function addClipboardListItem(text,item_color) {
             chrome.storage.sync.set({ 'list': list, 'listcolor': listcolor }, () => getClipboardText());});
     })
 
-    downArrowImage.addEventListener('click', (event) => {
+    downArrowDiv.addEventListener('click', (event) => {
         console.log("Down arrow clicked");
         chrome.storage.sync.get(['list','listcolor'], clipboard => {
             let list = clipboard.list;
