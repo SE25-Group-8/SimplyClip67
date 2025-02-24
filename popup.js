@@ -24,6 +24,9 @@ checkbox.addEventListener('click',checkMode)
 let _clipboardList = document.querySelector("#clipboard_list");
 let addButton = document.getElementById('add-btn');
 
+let createListButton = document.getElementById('create-list-btn');
+let deleteListButton = document.getElementById('delete-list-btn');
+
 function doDjangoCall(type, url, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -51,6 +54,32 @@ function doDjangoCall(type, url, data, callback) {
         xmlhttp.send();
     }
 }
+
+
+createListButton.addEventListener('click', () => {
+    // Prompt the user for a new list name
+    let newListName = prompt("Enter new list name:");
+
+    if (newListName) {
+        // Proceed to create the list if a name is entered
+        createNewList(newListName); // Function defined later in the code
+    } else {
+        alert("Please enter a valid list name!");
+    }
+});
+
+deleteListButton.addEventListener('click', () => {
+    // Get the currently selected list from the dropdown
+    let dropdown = document.getElementById('list-dropdown');
+    let selectedList = dropdown.value;
+
+    // Confirm deletion (to prevent accidental deletions)
+    let confirmation = confirm(`Are you sure you want to delete the list: "${selectedList}"? This action cannot be undone.`);
+    
+    if (confirmation) {
+        deleteList(selectedList);  // Calls the deleteList function
+    }
+});
 
 addButton.addEventListener('click', (event) => {
         let textitem = ''
@@ -96,6 +125,10 @@ addButton.addEventListener('click', (event) => {
         addClipboardListItem(textitem)
     }
 )
+
+
+
+
 /**
  * Gets the copied text from storage and calls addClipboardListItem function to populate list in the pop-up
  * @example
@@ -105,14 +138,35 @@ addButton.addEventListener('click', (event) => {
 
 function getClipboardText() {
 
-    chrome.storage.sync.get(['list','listcolor'], clipboard => {
-      let list=clipboard.list;
-      let listcolor=clipboard.listcolor;
+    chrome.storage.sync.get(['lists', 'currentList', 'listcolors'], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };  // Ensure lists exist
+        let currentList = clipboard.currentList || "Default"; // Default to "Default"
+        let list = lists[currentList] || []; // Get items from the selected list
+        let listcolor = clipboard.listcolors || {};
+    
 
+        let dropdown = document.getElementById('list-dropdown');
+        dropdown.innerHTML = ""; // Clear existing options
+
+        for (let listName in lists) {
+            let option = document.createElement("option");
+            option.value = listName;
+            option.textContent = listName;
+            if (listName === currentList) {
+                option.selected = true;
+            }
+            dropdown.appendChild(option);
+        }
+
+        // Handle list switching when the user selects a different list
+        dropdown.addEventListener('change', function () {
+            let selectedList = this.value;
+            chrome.storage.sync.set({ 'currentList': selectedList }, () => {
+                getClipboardText(); // Refresh the displayed list
+            });
+        });
 
         // Fallbacks for undefined lists
-        
-       
        
         let emptyDiv = document.getElementById('empty-div');
         let downloadDiv1 = document.getElementById('download-btn1');
@@ -120,6 +174,7 @@ function getClipboardText() {
         let searchInput = document.getElementById('searchText');
         let highlightInput = document.getElementById('highlight-search');
         let deleteAll = document.getElementById('delete-btn');
+
         if (list === undefined || list.length === 0) {
             emptyDiv.classList.remove('hide-div');
             downloadDiv1.style.display = 'none';
@@ -147,15 +202,11 @@ function getClipboardText() {
                 deleteAllText();
             })
             if (typeof list !== undefined)
-                list.forEach(item => {
-                    indexOfItem = list.indexOf(item);
-                    if (typeof listcolor !== 'undefined' && typeof listcolor[indexOfItem] !== 'undefined') {
-                        color = listcolor[indexOfItem];
-                      } else {
-                        color = 'black';
-                      }
-                    addClipboardListItem(item,color);
+                list.forEach((item, index) => {
+                    let color = (listcolor[currentList] && listcolor[currentList][index]) ? listcolor[currentList][index] : 'black';
+                    addClipboardListItem(item, color);
                 });
+                
 
                
         }
@@ -164,8 +215,11 @@ function getClipboardText() {
 }
 
 function getClipboardImages() {
-    chrome.storage.local.get(['imageList'], result => {
-      let imageList = result.imageList || [];
+    chrome.storage.local.get(['imageLists', 'currentList'], result => {
+        let imageLists = result.imageLists || { "Default": [] };
+        let currentList = result.currentList || "Default";
+        let imageList = imageLists[currentList] || [];
+    
       if (imageList.length === 0) {
         // Handle empty image list if necessary
       } else {
@@ -240,12 +294,15 @@ function addClipboardImageItem(imageDataUrl) {
   }
   
   function deleteImageItem(imageDataUrl) {
-    chrome.storage.local.get(["imageList"], function (result) {
-      let imageList = result.imageList || [];
+    chrome.storage.local.get(["imageLists", "currentList"], function (result) {
+        let imageLists = result.imageLists || { "Default": [] };
+        let currentList = result.currentList || "Default";
+        let imageList = imageLists[currentList] || [];
       let index = imageList.indexOf(imageDataUrl);
       if (index !== -1) {
         imageList.splice(index, 1);
-        chrome.storage.local.set({ imageList: imageList }, () => {
+        imageLists[currentList] = imageList;
+        chrome.storage.local.set({ imageLists: imageLists }, () => {
           _clipboardList.innerHTML = "";
           getClipboardText();
         });
@@ -254,12 +311,16 @@ function addClipboardImageItem(imageDataUrl) {
   }
   
   function moveImageItemUp(imageDataUrl) {
-    chrome.storage.local.get(["imageList"], function (result) {
-      let imageList = result.imageList || [];
+    chrome.storage.local.get(["imageLists", "currentList"], function (result) {
+        let imageLists = result.imageLists || { "Default": [] };
+        let currentList = result.currentList || "Default";
+        let imageList = imageLists[currentList] || [];
+    
       let index = imageList.indexOf(imageDataUrl);
       if (index > 0) {
         [imageList[index - 1], imageList[index]] = [imageList[index], imageList[index - 1]];
-        chrome.storage.local.set({ imageList: imageList }, () => {
+        imageLists[currentList] = imageList;
+        chrome.storage.local.set({ imageLists: imageLists }, () => {
           _clipboardList.innerHTML = "";
           getClipboardText();
         });
@@ -268,12 +329,16 @@ function addClipboardImageItem(imageDataUrl) {
   }
   
   function moveImageItemDown(imageDataUrl) {
-    chrome.storage.local.get(["imageList"], function (result) {
-      let imageList = result.imageList || [];
+    chrome.storage.local.get(["imageLists", "currentList"], function (result) {
+        let imageLists = result.imageLists || { "Default": [] };
+        let currentList = result.currentList || "Default";
+        let imageList = imageLists[currentList] || [];
+    
       let index = imageList.indexOf(imageDataUrl);
       if (index < imageList.length - 1) {
         [imageList[index], imageList[index + 1]] = [imageList[index + 1], imageList[index]];
-        chrome.storage.local.set({ imageList: imageList }, () => {
+        imageLists[currentList] = imageList;
+        chrome.storage.local.set({ imageLists: imageLists }, () => {
           _clipboardList.innerHTML = "";
           getClipboardText();
         });
@@ -282,6 +347,77 @@ function addClipboardImageItem(imageDataUrl) {
   }
   
   
+
+//////////////////////////////  List Functions  ////////////////////////////////////////////
+
+  function createNewList(listName) {
+    chrome.storage.sync.get(['lists'], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };
+        if (!lists[listName]) {
+            lists[listName] = [];
+            chrome.storage.sync.set({ lists: lists }, () => {
+                updateListDropdown(); // Refresh the dropdown UI
+            });
+        }
+    });
+  }
+
+  function deleteList(listName) {
+    chrome.storage.sync.get(['lists', 'currentList'], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };
+        if (listName === "Default") return; // Don't delete the default list
+
+        delete lists[listName]; // Remove the list
+
+        let newCurrentList = "Default";
+        chrome.storage.sync.set({ lists: lists, currentList: newCurrentList }, () => {
+            updateListDropdown(); 
+            getClipboardText();
+        });
+    });
+  }
+
+
+  function updateListDropdown() {
+    chrome.storage.sync.get(['lists', 'currentList'], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };
+        let currentList = clipboard.currentList || "Default";
+
+        let dropdown = document.getElementById('list-dropdown');
+        dropdown.innerHTML = ""; // Clear existing options
+
+        for (let listName in lists) {
+            let option = document.createElement("option");
+            option.value = listName;
+            option.textContent = listName;
+            if (listName === currentList) {
+                option.selected = true;
+            }
+            dropdown.appendChild(option);
+        }
+    });
+  }
+
+  function moveItemToList(item, targetList) {
+    chrome.storage.sync.get(['lists', 'currentList'], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };
+        let currentList = clipboard.currentList || "Default";
+
+        let itemIndex = lists[currentList].indexOf(item);
+        if (itemIndex !== -1) {
+            lists[currentList].splice(itemIndex, 1);
+        }
+
+        lists[targetList] = lists[targetList] || [];
+        lists[targetList].unshift(item);
+
+        chrome.storage.sync.set({ 'lists': lists }, () => {
+            getClipboardText(); // Refresh the display
+        });
+    });
+  }
+
+
 /**
  * Gets the source URL and the image url for the copied image/text
  * @param {*} textContent

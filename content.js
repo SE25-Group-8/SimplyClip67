@@ -22,101 +22,84 @@
  let _maxListSize = 100;
  let time_interval_set = undefined;
  
+ chrome.storage.sync.get("selectedList", function (data) {
+  if (!data.selectedList) {
+    chrome.storage.sync.set({ selectedList: "Default" });
+  }
+});
+
  const readClipboardData = () => {
-   chrome.storage.local.get('enabled', data => {
-     if (data.enabled == true) {
-       navigator.clipboard.read().then(clipboardItems => {
-         for (const clipboardItem of clipboardItems) {
-           for (const type of clipboardItem.types) {
-             if (type.startsWith('image/') || type === 'image/tiff') {
-               clipboardItem.getType(type).then(blob => {
-                 if (_previousData !== blob) {
-                   setClipboardImage(blob);
-                   _previousData = blob;
-                 }
-               });
-             } else if (type === 'text/plain') {
-               clipboardItem.getType('text/plain').then(blob => {
-                 blob.text().then(text => {
-                   if (text.length > 0 && text !== _previousData) {
-                     setClipboardText(text);
-                     _previousData = text;
-                   }
-                 });
-               });
-             }
-           }
-         }
-       }).catch(err => console.log(err));
-     }
-   });
- };
+  chrome.storage.local.get('enabled', data => {
+    if (data.enabled == true) {
+      navigator.clipboard.read().then(clipboardItems => {
+        for (const clipboardItem of clipboardItems) {
+          for (const type of clipboardItem.types) {
+            if (type === 'text/plain') {
+              clipboardItem.getType('text/plain').then(blob => {
+                blob.text().then(text => {
+                  if (text.length > 0 && text !== _previousData) {
+                    chrome.storage.sync.get("selectedList", function (listData) {
+                      let currentList = listData.selectedList || "Default";
+                      console.log(`Saving text to list: ${currentList}`);
+                      setClipboardText(text);
+                      _previousData = text;
+                    });
+                  }
+                });
+              });
+            }
+          }
+        }
+      }).catch(err => console.log(err));
+    }
+  });
+};
  
- const setClipboardImage = async (imageBlob) => {
-   chrome.storage.local.get(['imageList'], function (result) {
-     let imageList = result.imageList || [];
-     if (imageList.length === _maxListSize) {
-       imageList.pop();
-     }
-     const reader = new FileReader();
-     reader.onload = function (e) {
-       const imageDataUrl = e.target.result;
-       if (!imageList.includes(imageDataUrl)) {
-         imageList.unshift(imageDataUrl);
-         chrome.storage.local.set({ 'imageList': imageList }, () => {
-           console.log("Debug: Image pushed to imageList");
-         });
-       }
-     };
-     reader.readAsDataURL(imageBlob);
-   });
- };
+const setClipboardImage = async (imageBlob) => {
+  chrome.storage.sync.get(["lists", "selectedList"], function (data) {
+    let lists = data.lists || { "Default": [] };
+    let currentList = data.selectedList || "Default";
+
+    if (!lists[currentList]) lists[currentList] = [];
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const imageDataUrl = e.target.result;
+      if (!lists[currentList].includes(imageDataUrl)) {
+        if (lists[currentList].length === _maxListSize) {
+          lists[currentList].pop();
+        }
+        lists[currentList].unshift(imageDataUrl);
+        chrome.storage.sync.set({ lists }, () => {
+          console.log(`Image saved to list: ${currentList}`);
+        });
+      }
+    };
+    reader.readAsDataURL(imageBlob);
+  });
+};
 
 
-const setClipboardText = async (clipText) => {
-    chrome.storage.sync.get("list", function (clipboard) {
-        chrome.storage.sync.get("listURL", function (clipboardURL) {
-            chrome.storage.sync.get("originalList", function (clipboardOriginalList) {
-                chrome.storage.sync.get("summarizedList", function (clipboardSummarizedList) {
-                chrome.storage.sync.get("citationList", function (clipboardCitationList) {
-                                    let { list } = clipboard;
-                                    let { listURL } = clipboardURL;
-                                    let { originalList } = clipboardOriginalList;
-                                    let { summarizedList } = clipboardSummarizedList;
-                                    let { citationList } = clipboardCitationList;
-                                    console.log("List is:-", list);
-                                    if (typeof list === "undefined" || list.length == 0) {
-                                        list = [];
-                                        listURL = [];
-                                        originalList = [];
-                                        summarizedList = [];
-                                        citationList = [];
-                                    }
-                                    if (list.length === _maxListSize) {
-                                        list.pop();
-                                        listURL.pop();
-                                        originalList = [];
-                                        summarizedList = [];
-                                        citationList = [];
-                                    }
-                                    if (list.indexOf(clipText) == -1) {
-                                        list.unshift(clipText);
-                                        listURL.unshift(window.location.href);
-                                        originalList.unshift(clipText);
-                                        summarizedList.unshift(clipText);
-                                        citationList.unshift(clipText);
-                                    }
-                                    chrome.storage.sync.set({ 'list': list }, status => console.log("Debug : Clipboard Text pushed to list"));
-                                    chrome.storage.sync.set({ 'listURL': listURL }, status => { console.log("Debug : URL pushed to list") })
-                                    chrome.storage.sync.set({ 'originalList': originalList }, status => console.log("Debug : Original Clipboard Text pushed to list"));
-                                    chrome.storage.sync.set({ 'summarizedList': summarizedList }, status => { console.log("Debug : summarizedText pushed to the summList") })
-                                    chrome.storage.sync.set({ 'citationList': citationList}, status => { console.log("Debug : citationText pushed to the citList") })
-                                })
-            })
-        })
-    })
-})
-}
+ const setClipboardText = async (clipText) => {
+  chrome.storage.sync.get(["lists", "selectedList"], function (data) {
+      let lists = data.lists || { "Default": [] };
+      let currentList = data.selectedList || "Default";
+
+      if (!lists[currentList]) {
+          lists[currentList] = [];
+      }
+
+      if (!lists[currentList].includes(clipText)) {
+          if (lists[currentList].length === _maxListSize) {
+              lists[currentList].pop();
+          }
+          lists[currentList].unshift(clipText);
+          chrome.storage.sync.set({ lists }, () => {
+              console.log(`Clipboard text saved to list: ${currentList}`);
+          });
+      }
+  });
+};
 
 window.addEventListener('mouseout',function(){
     if(time_interval_set===undefined)

@@ -58,6 +58,12 @@
     <div id="summarize-btn" title="Click here to summarize all copied texts">
       <img src="images/summarizer.png" width="35px" height="35px" alt="Summarize" title="Summarize All">
     </div>
+    <div class="list-management">
+      <label for="listDropdown">Select List:</label>
+      <select id="listDropdown"></select>
+      <button id="create-list-btn" title="Create a new list">+</button>
+      <button id="delete-list-btn" title="Delete selected list">🗑</button>
+    </div>
   </div>
    <div class="text-left" id="search">
     <textarea id="searchText" placeholder="Find copied text!" width = 80% autofocus></textarea>
@@ -83,7 +89,14 @@
     </div>
   </div>
 
-  <ul id="clipboard_list"></ul>
+  <div id="clipboardContainer">
+    <ul id="clipboard_list"></ul>
+    <div id="moveTextContainer">
+      <label for="moveToList">Move to:</label>
+      <select id="moveToList"></select>
+      <button id="moveTextBtn">Move</button>
+    </div>
+  </div>
   <div id="snackbar">Text copied!</div>
   <script type="text/javascript" src="popup.js"></script>
 </body>
