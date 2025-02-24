@@ -393,6 +393,7 @@ function addClipboardListItem(text,item_color) {
     else listItem.classList.add("text-entry");
        let listDiv = document.createElement("div"),
        //highlightButton = document.createElement("button"),
+        toolsDiv = document.createElement("div"),
         deleteDiv = document.createElement("div"),
         editDiv = document.createElement("div"),
         colorTabsDiv = document.createElement("div"),
@@ -508,6 +509,12 @@ function addClipboardListItem(text,item_color) {
     })
     listDiv.classList.add("list-div");
     contentDiv.appendChild(listDiv);
+
+
+    // Tools div will contain tools such as edit,delete, up/down arrows and so on
+    toolsDiv.classList.add("tools");
+    contentDiv.appendChild(toolsDiv);
+
     editImage.src = './images/pencil.png';
     editImage.classList.add("edit");
     deleteImage.src = './images/delete-note.png';
@@ -525,12 +532,12 @@ function addClipboardListItem(text,item_color) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.classList.add('checkbox');
-    contentDiv.appendChild(checkbox);
+    toolsDiv.appendChild(checkbox);
 
     editDiv.appendChild(editImage);
-    contentDiv.appendChild(editDiv);
+    toolsDiv.appendChild(editDiv);
     deleteDiv.appendChild(deleteImage);
-    contentDiv.appendChild(deleteDiv);
+    toolsDiv.appendChild(deleteDiv);
 
     var listOfTabColors = document.createElement('select');
     listOfTabColors.classList.add('dropdown');
@@ -542,10 +549,10 @@ function addClipboardListItem(text,item_color) {
     listOfTabColors.style.height = "32px";
     listOfTabColors.style.margin = "13.5px";
     colorTabsDiv.appendChild(listOfTabColors);
-    contentDiv.appendChild(colorTabsDiv);
+    toolsDiv.appendChild(colorTabsDiv);
 
     citDiv.appendChild(citImage);
-    contentDiv.appendChild(citDiv);
+    toolsDiv.appendChild(citDiv);
 
     // Create choices
     let colorchoices = [];
@@ -593,9 +600,9 @@ function addClipboardListItem(text,item_color) {
 
 
     upArrowDiv.appendChild(upArrowImage);
-    contentDiv.appendChild(upArrowDiv);
+    toolsDiv.appendChild(upArrowDiv);
     downArrowDiv.appendChild(downArrowImage);
-    contentDiv.appendChild(downArrowDiv);
+    toolsDiv.appendChild(downArrowDiv);
     //summDiv.appendChild(summImage);
     //contentDiv.appendChild(summDiv);
 

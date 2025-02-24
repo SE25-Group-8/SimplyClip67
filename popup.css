@@ -62,9 +62,9 @@ ul li{
 } */
 .content{
     overflow: hidden;
-    display: flex;
+    /* display: flex; */
 
-    justify-content: space-between;
+    /* justify-content: space-between; */
     height: 100%;
 }
 
@@ -518,9 +518,7 @@ ul li {
 /* icons and checkbox on same line */
 /* Ensure icons and checkbox align on the same line */
 .content {
-    display: flex;
-    align-items: center; /* Align all items vertically */
-    justify-content: space-between; /* Distribute items evenly */
+    
     width: 100%; /* Ensure content takes full width */
 }
 
@@ -566,4 +564,11 @@ ul li {
  #summarize-btn img {
     width: 35px;
     height: 35px;
+ }
+
+ .listitem .content .tools{
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    justify-content: space-between;
  }
