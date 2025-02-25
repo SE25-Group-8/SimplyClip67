@@ -43,13 +43,11 @@ ul{
 }
 ul li{
 	margin: 10px;
+    margin-top: 15px;
     font-size: 14px;
     height: auto;
-    border-bottom: 1px solid;
-    border-bottom-color: #ec9358;
-    border-right: 1px solid;
-    box-shadow: 0.3px 0 5px -2.1px rgba(0,0,0,0.5);
-    /* cursor: pointer; */
+    border: 1px solid #ddd;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     white-space: nowrap;
     -webkit-border-radius: 10px; /* Setting cross browser rounded edges*/
     -moz-border-radius: 10px;
@@ -72,8 +70,8 @@ ul li{
 .list-div{
 
     display: contents;
-    border-right: solid;
-    width:20rem;
+    /* border-right: solid; */
+    /* width:20rem; */
 }
 
 /* style for text box in each list item*/
@@ -82,18 +80,50 @@ ul li{
     padding-top:1em;
     padding-left: 1.2em;
     font-size: 1.1em;
-    max-width:17rem;
     overflow: hidden;
-    width: 17rem;
-    border-right: 1px solid;
-    border-radius: 3px;
     height: 4em;
+    min-height: 60px;
+    white-space: normal; /* Ensures text wraps */
+    word-wrap: break-word; /* Breaks long words if necessary */
+    overflow-wrap: break-word; /* Ensures wrapping for long words */
+    max-width: 100%;
     padding-bottom: 1em;
+}
+
+
+.list-div p {
+  --sb-track-color: #dddddd;
+  --sb-thumb-color: #898989;
+  --sb-size: 4px;
+}
+
+.list-div p::-webkit-scrollbar {
+  width: var(--sb-size)
+}
+
+.list-div p::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 6px;
+}
+
+.list-div p::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 6px;
+  
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .list-div p {
+    scrollbar-color: var(--sb-thumb-color)
+                     var(--sb-track-color);
+  }
 }
 
 .list-div p:hover{
     background: whitesmoke;
     transform: translateX(1px);
+    border: 2px solid black;
+    border-radius: 6px;
 }
 
 /* will dictate css if image is copied into clipboard */
@@ -477,10 +507,7 @@ ul li{
 
 .list-div p {
     white-space: pre-wrap; /* Allows text wrapping */
-    border: 1px solid #ddd; /* Adds a border */
     padding: 8px; /* Adjust padding for readability */
-    border-radius: 4px; /* Rounded border for aesthetic */
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2); /* Optional shadow */
     height: auto; /* Adjust height based on content */
     max-height: 100px; /* Set a reasonable max height */
     overflow-y: auto; /* Adds scroll if text exceeds max height */
@@ -524,8 +551,8 @@ ul li {
 
 /* Increase size of the checkbox */
 .checkbox {
-    width: 25px; /* Increase width */
-    height: 25px; /* Increase height */
+    width: 22px; /* Increase width */
+    height: 22px; /* Increase height */
 }
 
 /* CSS CHANGES FOR FIXING IMAGE CSS */
@@ -568,13 +595,14 @@ ul li {
  .listitem .content .tools{
     display: flex;
     align-items: center;
-    padding: 8px;
+    padding: 6px;
     justify-content: space-between;
+    background-color: whitesmoke;
  }
 
 .tools .tool-wrapper{
-    height: 35px;
-    width: 35px;
+    height: 32px;
+    width: 32px;
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -587,6 +615,6 @@ ul li {
 }
 
 .tool-wrapper img{
-    height: 25px;
-    width: 25px;
+    height: 22px;
+    width: 22px;
 }

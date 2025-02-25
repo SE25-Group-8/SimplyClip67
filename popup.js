@@ -468,7 +468,7 @@ function addClipboardListItem(text,item_color) {
     listOfTabColors.classList.add("color");
     listOfTabColors.classList.add("dropdown");
     listOfTabColors.style.width = "20px";
-    listOfTabColors.style.height = "25px";
+    listOfTabColors.style.height = "22px";
     colorTabsDiv.appendChild(listOfTabColors);
     citDiv.appendChild(citImage);
     upArrowDiv.appendChild(upArrowImage);
