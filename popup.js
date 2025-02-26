@@ -635,20 +635,44 @@ function addClipboardListItem(text,item_color) {
         })
     })
 
-    editDiv.addEventListener('click', (event) => {
-        console.log("Edit button clicked");
-        prevText = listPara.textContent;
-        console.log(prevText);
+    editDiv.addEventListener("click", (event) => {
+        let listPara = event.target.closest(".content").querySelector("p");
+        let oldText = listPara.textContent.trim();
+    
         listPara.setAttribute("contenteditable", "true");
-
-        listPara.style.height = 'auto';
-        listPara.style.whiteSpace = 'break-spaces';
         listPara.focus();
-        // listDiv.style.borderColor = "red";
-        // listPara.style.backgroundColor = "grey"
-        // listPara.style.height = "100px"
-        //listPara.focus();
-    })
+    
+        listPara.addEventListener("focusout", function saveEdit() {
+            let newText = listPara.textContent.trim();
+    
+            // Prevent empty edits
+            if (!newText || newText === oldText) {
+                listPara.setAttribute("contenteditable", "false");
+                return;
+            }
+    
+            chrome.storage.sync.get(["lists", "activeList"], function (data) {
+                let lists = data.lists || { "Default": [] };
+                let activeList = data.activeList || "Default";
+    
+                if (!lists[activeList]) {
+                    lists[activeList] = [];
+                }
+    
+                let index = lists[activeList].indexOf(oldText);
+                if (index !== -1) {
+                    lists[activeList][index] = newText; // ✅ Update the text in the active list
+                }
+    
+                // Save changes to storage
+                chrome.storage.sync.set({ "lists": lists }, function () {
+                    listPara.setAttribute("contenteditable", "false"); // Disable editing
+                    listPara.removeEventListener("focusout", saveEdit); // Cleanup listener
+                    getClipboardText(); // ✅ Refresh UI with updated text
+                });
+            });
+        });
+    });
 
     deleteDiv.addEventListener('click', (event) => {
         console.log("Delete clicked");
@@ -761,87 +785,86 @@ function addClipboardListItem(text,item_color) {
         });
 
 
+    upArrowDiv.addEventListener("click", (event) => {
+        console.log("Up arrow clicked");
+        chrome.storage.sync.get(["lists", "activeList", "listcolor", "listURL", "originalList"], (data) => {
+            let lists = data.lists || { "Default": [] };
+            let activeList = data.activeList || "Default";
+            let listcolor = data.listcolor || {};
+            let urlList = data.listURL || {};
+            let originalList = data.originalList || {};
 
-    upArrowDiv.addEventListener('click', (event) => {
-    console.log("Up arrow clicked");
-    chrome.storage.sync.get(['list','listcolor'], clipboard => {
-        let list = clipboard.list;
-        let listcolor = clipboard.listcolor;
-        let index = list.indexOf(text);
-        if(index != 0){
-            let temp=list[index];
-            prevcolor=listcolor[index];
-            list[index]=list[index-1];
-            list[index-1]=temp;
-            listcolor[index]=listcolor[index-1];
-            listcolor[index-1]=prevcolor;
-            _clipboardList.innerHTML = "";
-        }
+            if (!lists[activeList]) return; // Ensure the active list exists
 
-        chrome.storage.sync.get(['listURL'], url => {
-            let urlList = url.listURL;
-            if(index != 0){
-                let temp=urlList[index];
-                urlList[index]=urlList[index-1];
-                urlList[index-1]=temp;
-                chrome.storage.sync.set({ 'listURL': urlList });
-            }
-        })
-
-        chrome.storage.sync.get(['originalList'], original => {
-            let originalList = original.originalList;
-            if(index != 0){
-                let temp=originalList[index];
-                originalList[index]=originalList[index-1];
-                originalList[index-1]=temp;
-                chrome.storage.sync.set({ 'originalList': originalList });
-            }
-        })
-
-        if(index!=0)
-            chrome.storage.sync.set({ 'list': list, 'listcolor': listcolor }, () => getClipboardText());});
-    })
-
-    downArrowDiv.addEventListener('click', (event) => {
-        console.log("Down arrow clicked");
-        chrome.storage.sync.get(['list','listcolor'], clipboard => {
-            let list = clipboard.list;
-            let colordata = clipboard.listcolor;
+            let list = lists[activeList];
             let index = list.indexOf(text);
-            if(index != list.length-1){
-                let temp=list[index];
-                let previouscolor=colordata[index];
-                list[index]=list[index+1];
-                list[index+1]=temp;
-                colordata[index]=colordata[index+1];
-                colordata[index+1]=previouscolor;
-                _clipboardList.innerHTML = "";
+
+            if (index > 0) {
+                // Swap text items
+                [list[index - 1], list[index]] = [list[index], list[index - 1]];
+                if (listcolor[activeList]) {
+                    [listcolor[activeList][index - 1], listcolor[activeList][index]] =
+                        [listcolor[activeList][index], listcolor[activeList][index - 1]];
+                }
+                if (urlList[activeList]) {
+                    [urlList[activeList][index - 1], urlList[activeList][index]] =
+                        [urlList[activeList][index], urlList[activeList][index - 1]];
+                }
+                if (originalList[activeList]) {
+                    [originalList[activeList][index - 1], originalList[activeList][index]] =
+                        [originalList[activeList][index], originalList[activeList][index - 1]];
+                }
+
+                // Save updated lists
+                chrome.storage.sync.set({ "lists": lists, "listcolor": listcolor, "listURL": urlList, "originalList": originalList }, () => {
+                    _clipboardList.innerHTML = "";
+                    getClipboardText(); // Refresh UI
+                });
             }
-
-            chrome.storage.sync.get(['listURL'], url => {
-                let urlList = url.listURL;
-                if(index != urlList.length-1){
-                    let temp=urlList[index];
-                    urlList[index]=urlList[index+1];
-                    urlList[index+1]=temp;
-                    chrome.storage.sync.set({ 'listURL': urlList });
-                }
-            })
-
-            chrome.storage.sync.get(['originalList'], original => {
-                let originalList = original.originalList;
-                if(index != originalList.length-1){
-                    let temp=originalList[index];
-                    originalList[index]=originalList[index+1];
-                    originalList[index+1]=temp;
-                    chrome.storage.sync.set({ 'originalList': originalList });
-                }
-            })
-            if(index != list.length-1)
-                chrome.storage.sync.set({ 'list': list, 'listcolor': colordata }, (parameter) => {getClipboardText()});
-        })
+        });
     });
 
+    downArrowDiv.addEventListener("click", (event) => {
+        console.log("Down arrow clicked");
+        chrome.storage.sync.get(["lists", "activeList", "listcolor", "listURL", "originalList"], (data) => {
+            let lists = data.lists || { "Default": [] };
+            let activeList = data.activeList || "Default";
+            let listcolor = data.listcolor || {};
+            let urlList = data.listURL || {};
+            let originalList = data.originalList || {};
+
+            if (!lists[activeList]) return; // Ensure the active list exists
+
+            let list = lists[activeList];
+            let index = list.indexOf(text);
+
+            if (index < list.length - 1) {
+                // Swap text items
+                [list[index], list[index + 1]] = [list[index + 1], list[index]];
+                if (listcolor[activeList]) {
+                    [listcolor[activeList][index], listcolor[activeList][index + 1]] =
+                        [listcolor[activeList][index + 1], listcolor[activeList][index]];
+                }
+                if (urlList[activeList]) {
+                    [urlList[activeList][index], urlList[activeList][index + 1]] =
+                        [urlList[activeList][index + 1], urlList[activeList][index]];
+                }
+                if (originalList[activeList]) {
+                    [originalList[activeList][index], originalList[activeList][index + 1]] =
+                        [originalList[activeList][index + 1], originalList[activeList][index]];
+                }
+
+                // Save updated lists
+                chrome.storage.sync.set({ "lists": lists, "listcolor": listcolor, "listURL": urlList, "originalList": originalList }, () => {
+                    _clipboardList.innerHTML = "";
+                    getClipboardText(); // Refresh UI
+                });
+            }
+        });
+    });
+
+        
+    
     listDiv.addEventListener('click', (event) => {
         let { textContent } = event.target;
         navigator.clipboard.writeText(textContent)
@@ -1000,36 +1023,51 @@ function highlightMatches(searchTerm) {
 }
 
 
-function deleteElem(text){
-    chrome.storage.sync.get(['list','listcolor'], clipboard => {
-        
-        let list = clipboard.list;
-        let colordata = clipboard.listcolor;
-        let highlights = clipboard.highlights;
-        let index = list.indexOf(text);
-        list.splice(index, 1);
-        colordata.splice(index, 1);
-        //delete highlights[text]; 
-        _clipboardList.innerHTML = "";
-        chrome.storage.sync.get(['listURL'], url => {
-            let urlList = url.listURL;
-            urlList.splice(index, 1);
-            chrome.storage.sync.set({ 'listURL': urlList })
-        })
-        chrome.storage.sync.get(['originalList'], original => {
-            let originalList = original.originalList;
-            originalList.splice(index, 1);
-            chrome.storage.sync.set({ 'originalList': originalList })
-        })
-        chrome.storage.sync.get(['citationList'], citList=> {
-            let citationList = citList.citationList;
-            citationList == undefined && (citationList = []);
-            citationList.splice(indexes[i], 1);
-            chrome.storage.sync.set({ 'citationList': citationList})
-        })
-        chrome.storage.sync.set({ 'list': list , 'listcolor': colordata}, () => getClipboardText());
-    })
+function deleteElem(text) {
+    chrome.storage.sync.get(["lists", "activeList", "listcolor", "listURL", "originalList", "citationList"], function (data) {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
+        let listcolor = data.listcolor || {};
+        let urlList = data.listURL || [];
+        let originalList = data.originalList || [];
+        let citationList = data.citationList || [];
+
+        // Ensure the active list exists
+        if (!lists[activeList]) {
+            lists[activeList] = [];
+        }
+
+        let index = lists[activeList].indexOf(text);
+        if (index !== -1) {
+            lists[activeList].splice(index, 1); // Remove from active list
+            if (listcolor[activeList]) {
+                listcolor[activeList].splice(index, 1);
+            }
+            if (urlList.length > index) {
+                urlList.splice(index, 1);
+            }
+            if (originalList.length > index) {
+                originalList.splice(index, 1);
+            }
+            if (citationList.length > index) {
+                citationList.splice(index, 1);
+            }
+
+            // Save updated lists
+            chrome.storage.sync.set({
+                "lists": lists,
+                "listcolor": listcolor,
+                "listURL": urlList,
+                "originalList": originalList,
+                "citationList": citationList
+            }, function () {
+                _clipboardList.innerHTML = ""; // ✅ Clear UI
+                getClipboardText(); // ✅ Refresh the list
+            });
+        }
+    });
 }
+
 
 let merging = document.getElementById("merge-btn");
 merging.addEventListener("click", () => {
