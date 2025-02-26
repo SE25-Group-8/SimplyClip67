@@ -523,6 +523,76 @@ describe('Check dark mode functionality',function() {
     });
 });
 
+describe('Prevent Creating a List Named "Default"', function() {
+    it('should not allow creating a list named "Default"', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Click 'Create List' button
+        const createListButton = await driver.findElement(By.id("createList"));
+        await createListButton.click();
+
+        // Enter "Default" as the list name in the prompt
+        await driver.executeScript("window.prompt = function() { return 'Default'; }");
+
+        // Click create list again to trigger the prompt
+        await createListButton.click();
+
+        // Get all dropdown options
+        const dropdownOptions = await driver.findElements(By.css("#listDropdown option"));
+        let defaultListCount = 0;
+        for (let option of dropdownOptions) {
+            const optionText = await option.getText();
+            if (optionText === "Default") {
+                defaultListCount++;
+            }
+        }
+
+        // Assert that there is only one "Default" list (the original one)
+        assert(defaultListCount === 1, "A second 'Default' list was created, but it should not be allowed.");
+
+        await driver.quit();
+    });
+});
+
+describe('Prevent Duplicate List Names', function() {
+    it('should not allow creating a list with an existing name', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Create an initial list named "Test List"
+        const createListButton = await driver.findElement(By.id("createList"));
+        await createListButton.click();
+        await driver.executeScript("window.prompt = function() { return 'Test List'; }");
+        await createListButton.click();
+
+        // Try to create a duplicate list with the same name
+        await createListButton.click();
+        await driver.executeScript("window.prompt = function() { return 'Test List'; }");
+        await createListButton.click();
+
+        // Get all dropdown options
+        const dropdownOptions = await driver.findElements(By.css("#listDropdown option"));
+        let testListCount = 0;
+        for (let option of dropdownOptions) {
+            const optionText = await option.getText();
+            if (optionText === "Test List") {
+                testListCount++;
+            }
+        }
+
+        // Assert that there is only one "Test List"
+        assert(testListCount === 1, "A duplicate 'Test List' was created, but it should not be allowed.");
+
+        await driver.quit();
+    });
+});
+
+
 describe('List Deletion', function() {
     it('should delete an existing list', async function() {
         this.timeout(10000);
@@ -539,6 +609,40 @@ describe('List Deletion', function() {
         await driver.quit();
     });
 });
+
+describe('Default List Protection', function() {
+    it('should prevent the Default list from being deleted', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Select the Default list
+        const listDropdown = await driver.findElement(By.id("listDropdown"));
+        await listDropdown.sendKeys("Default");
+
+        // Click the Delete List button
+        const deleteListButton = await driver.findElement(By.id("deleteList"));
+        await deleteListButton.click();
+
+        // Check if the Default list still exists
+        const dropdownOptions = await driver.findElements(By.css("#listDropdown option"));
+        let defaultListExists = false;
+        for (let option of dropdownOptions) {
+            const optionText = await option.getText();
+            if (optionText === "Default") {
+                defaultListExists = true;
+                break;
+            }
+        }
+
+        // Assert that the Default list is still present
+        assert(defaultListExists, "The Default list was deleted, but it should not be allowed.");
+
+        await driver.quit();
+    });
+});
+
 
 describe('List Switching', function() {
     it('should switch between lists', async function() {
@@ -577,6 +681,43 @@ describe('Clipboard List Management', function() {
         // Check that the item appears in the clipboard list
         const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
         assert(clipboardItems.length > 0, "Copied text did not appear in the list");
+
+        await driver.quit();
+    });
+});
+
+describe('Clipboard List Assignment', function() {
+    it('should add copied text to the correct active list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Select/Create a specific list
+        const listDropdown = await driver.findElement(By.id("listDropdown"));
+        await listDropdown.sendKeys("Test List");
+
+        // Click 'Create List' button to ensure the list exists
+        const createListButton = await driver.findElement(By.id("createList"));
+        await createListButton.click();
+
+        // Select the newly created list
+        await listDropdown.sendKeys("Test List");
+
+        // Simulate adding an entry (since clipboard events can't be triggered via Selenium)
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+
+        // Verify that the text appears in the clipboard list under "Test List"
+        const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        assert(clipboardItems.length > 0, "Copied text did not appear in the correct list");
+
+        // Switch to a different list
+        await listDropdown.sendKeys("Default");
+
+        // Verify that the copied text does NOT appear in the "Default" list
+        const defaultClipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        assert(defaultClipboardItems.length === 0, "Copied text incorrectly appeared in the Default list");
 
         await driver.quit();
     });
