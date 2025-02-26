@@ -96,6 +96,80 @@ addButton.addEventListener('click', (event) => {
         addClipboardListItem(textitem)
     }
 )
+
+
+
+/**
+ * Create, Switch, and Delete Lists
+ */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const listDropdown = document.getElementById("listDropdown");
+    const createListButton = document.getElementById("createList");
+    const deleteListButton = document.getElementById("deleteList");
+
+    // Load lists and active list
+    chrome.storage.sync.get(["lists", "activeList"], function (data) {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
+
+        updateDropdown(lists, activeList);
+    });
+
+    // Function to update dropdown
+    function updateDropdown(lists, activeList) {
+        listDropdown.innerHTML = "";
+        Object.keys(lists).forEach(list => {
+            let option = document.createElement("option");
+            option.value = list;
+            option.textContent = list;
+            if (list === activeList) {
+                option.selected = true;
+            }
+            listDropdown.appendChild(option);
+        });
+    }
+
+    // Switch active list
+    listDropdown.addEventListener("change", function () {
+        chrome.storage.sync.set({ "activeList": listDropdown.value });
+    });
+
+    // Create new list using a prompt
+    createListButton.addEventListener("click", function () {
+        let newList = prompt("Enter a name for the new list:");
+        if (newList && newList.trim() && newList !== "Default") {
+            newList = newList.trim();
+            chrome.storage.sync.get("lists", function (data) {
+                let lists = data.lists || { "Default": [] };
+                if (!lists[newList]) {
+                    lists[newList] = [];
+                    chrome.storage.sync.set({ "lists": lists, "activeList": newList }, function () {
+                        updateDropdown(lists, newList);
+                    });
+                }
+            });
+        }
+    });
+
+    // Delete a list (except Default)
+    deleteListButton.addEventListener("click", function () {
+        let selectedList = listDropdown.value;
+        if (selectedList !== "Default") {
+            chrome.storage.sync.get("lists", function (data) {
+                let lists = data.lists || { "Default": [] };
+                delete lists[selectedList];
+
+                chrome.storage.sync.set({ "lists": lists, "activeList": "Default" }, function () {
+                    updateDropdown(lists, "Default");
+                });
+            });
+        }
+    });
+});
+
+
+
 /**
  * Gets the copied text from storage and calls addClipboardListItem function to populate list in the pop-up
  * @example
