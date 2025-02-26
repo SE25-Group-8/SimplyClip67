@@ -309,9 +309,9 @@ Users can download the list of  copied items as a document file or CSV file. The
 ## :handshake: Contributors
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/archig97"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Archismita</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/Dharani-Guda"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Dharani</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/PaulMacNichol"><img src="https://avatars.githubusercontent.com/u/32798037?v=4" width="75px;" alt=""/><br /><sub><b>Paul MacNichol</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/atharvapatil22"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Atharva Patil</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/akhiladusumilli100"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Akhil Adusumilli</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/ryangallagher35"><img src="https://avatars.githubusercontent.com/u/32798037?v=4" width="75px;" alt=""/><br /><sub><b>Ryan Gallagher</b></sub></a><br /></td>
   </tr>
 </table>
 
