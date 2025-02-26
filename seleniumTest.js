@@ -712,3 +712,181 @@ it('should only show search results from the active list', async function() {
     const searchResultsAfterSwitch = await driver.findElements(By.css("#clipboard_list li"));
     assert.strictEqual(searchResultsAfterSwitch.length, 0, "Search results include items from a different list");
 });
+
+
+// TESTS FOR BG COLOR
+const { Builder, By, until } = require('selenium-webdriver');
+const assert = require('assert');
+
+let driver;
+
+beforeEach(async function() {
+    driver = new Builder().forBrowser('chrome').build();
+    await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+});
+
+afterEach(async function() {
+    await driver.quit();
+});
+
+it('should change background color to red', async function() {
+    const colorButton = await driver.findElement(By.id('color-red'));
+    await colorButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(255, 0, 0, 1)', "Background color didn't change to red");
+});
+
+it('should change background color to blue', async function() {
+    const colorButton = await driver.findElement(By.id('color-blue'));
+    await colorButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(0, 0, 255, 1)', "Background color didn't change to blue");
+});
+
+it('should change background color to white', async function() {
+    const colorButton = await driver.findElement(By.id('color-white'));
+    await colorButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(255, 255, 255, 1)', "Background color didn't change to white");
+});
+
+it('should change background color using color picker', async function() {
+    const colorPicker = await driver.findElement(By.id('color-picker'));
+    await colorPicker.sendKeys('#00ff00'); // Green
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(0, 255, 0, 1)', "Background color didn't change via color picker");
+});
+
+it('should persist background color after refresh', async function() {
+    const colorButton = await driver.findElement(By.id('color-yellow'));
+    await colorButton.click();
+    await driver.navigate().refresh();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(255, 255, 0, 1)', "Background color didn't persist after refresh");
+});
+
+it('should not change color when invalid value is entered in color picker', async function() {
+    const colorPicker = await driver.findElement(By.id('color-picker'));
+    await colorPicker.sendKeys('invalidColor');
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.notStrictEqual(bgColor, 'invalidColor', "Invalid color was applied");
+});
+
+it('should reset background color to default', async function() {
+    const resetButton = await driver.findElement(By.id('reset-color'));
+    await resetButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(255, 255, 255, 1)', "Background color reset failed");
+});
+
+it('should store selected color in local storage', async function() {
+    const colorButton = await driver.findElement(By.id('color-purple'));
+    await colorButton.click();
+    const storedColor = await driver.executeScript("return localStorage.getItem('bgColor');");
+    assert.strictEqual(storedColor, 'rgba(128, 0, 128, 1)', "Background color not stored in local storage");
+});
+
+it('should retrieve color from local storage on page load', async function() {
+    await driver.executeScript("localStorage.setItem('bgColor', 'rgba(0, 128, 128, 1)');");
+    await driver.navigate().refresh();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(0, 128, 128, 1)', "Stored background color was not applied");
+});
+
+it('should allow entering a custom hex color code', async function() {
+    const colorInput = await driver.findElement(By.id('color-input'));
+    await colorInput.sendKeys('#123456');
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.strictEqual(bgColor, 'rgba(18, 52, 86, 1)', "Hex color code input did not change the background");
+});
+
+it('should display an error message for invalid hex code', async function() {
+    const colorInput = await driver.findElement(By.id('color-input'));
+    await colorInput.sendKeys('#ZZZZZZ');
+    const errorMsg = await driver.findElement(By.id('color-error')).getText();
+    assert.strictEqual(errorMsg, 'Invalid color code', "Error message not displayed for invalid hex");
+});
+
+it('should not allow background color change when disabled', async function() {
+    await driver.executeScript("document.getElementById('color-red').disabled = true;");
+    const colorButton = await driver.findElement(By.id('color-red'));
+    await colorButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.notStrictEqual(bgColor, 'rgba(255, 0, 0, 1)', "Background color changed despite being disabled");
+});
+
+it('should update the background preview when color is selected', async function() {
+    const colorPicker = await driver.findElement(By.id('color-picker'));
+    await colorPicker.sendKeys('#ff9900'); // Orange
+    const preview = await driver.findElement(By.id('color-preview'));
+    const previewColor = await preview.getCssValue('background-color');
+    assert.strictEqual(previewColor, 'rgba(255, 153, 0, 1)', "Preview did not update correctly");
+});
+
+it('should support dark mode switch without affecting background color setting', async function() {
+    const darkModeButton = await driver.findElement(By.id('dark-mode-toggle'));
+    await darkModeButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.notStrictEqual(bgColor, 'rgba(0, 0, 0, 1)', "Background color changed unexpectedly with dark mode");
+});
+
+it('should allow color selection from predefined color palette', async function() {
+    const colorPalette = await driver.findElement(By.id('color-palette'));
+    const colorOptions = await colorPalette.findElements(By.css('.color-option'));
+    await colorOptions[3].click(); // Select a color
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.notStrictEqual(bgColor, 'rgba(255, 255, 255, 1)', "Color palette selection failed");
+});
+
+// TESTS for general functionality
+
+it('should save settings to local storage', async function() {
+    const saveButton = await driver.findElement(By.id('save-settings'));
+    await saveButton.click();
+    const savedSettings = await driver.executeScript("return localStorage.getItem('userSettings');");
+    assert(savedSettings, "Settings were not saved");
+});
+
+it('should load saved settings on refresh', async function() {
+    await driver.executeScript("localStorage.setItem('userSettings', JSON.stringify({ theme: 'dark' }));");
+    await driver.navigate().refresh();
+    const themeSetting = await driver.executeScript("return JSON.parse(localStorage.getItem('userSettings')).theme;");
+    assert.strictEqual(themeSetting, 'dark', "Settings did not persist after refresh");
+});
+
+it('should display an alert when reset settings is clicked', async function() {
+    await driver.executeScript("window.alert = function(msg) { return msg; };");
+    const resetButton = await driver.findElement(By.id('reset-settings'));
+    await resetButton.click();
+    const alertMessage = await driver.executeScript("return window.alert.arguments[0];");
+    assert.strictEqual(alertMessage, "Settings reset successfully", "Reset alert did not appear");
+});
+
+it('should display a confirmation message when background color is changed', async function() {
+    const colorButton = await driver.findElement(By.id('color-green'));
+    await colorButton.click();
+    const confirmationMessage = await driver.findElement(By.id('color-change-confirmation')).getText();
+    assert.strictEqual(confirmationMessage, 'Background color changed to green', "Confirmation message didn't appear after color change");
+});
+
+it('should disable background color selection when "lock" option is enabled', async function() {
+    const lockButton = await driver.findElement(By.id('lock-color'));
+    await lockButton.click();
+    const colorButton = await driver.findElement(By.id('color-blue'));
+    await colorButton.click();
+    const body = await driver.findElement(By.tagName('body'));
+    const bgColor = await body.getCssValue('background-color');
+    assert.notStrictEqual(bgColor, 'rgba(0, 0, 255, 1)', "Background color changed despite being locked");
+});
