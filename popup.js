@@ -661,14 +661,15 @@ function addClipboardListItem(text,item_color) {
     
                 let index = lists[activeList].indexOf(oldText);
                 if (index !== -1) {
-                    lists[activeList][index] = newText; // ✅ Update the text in the active list
+                    lists[activeList][index] = newText; //Update the text in the active list
                 }
     
                 // Save changes to storage
                 chrome.storage.sync.set({ "lists": lists }, function () {
                     listPara.setAttribute("contenteditable", "false"); // Disable editing
                     listPara.removeEventListener("focusout", saveEdit); // Cleanup listener
-                    getClipboardText(); // ✅ Refresh UI with updated text
+                    _clipboardList.innerHTML = "";
+                    getClipboardText(); // Refresh UI with updated text
                 });
             });
         });
