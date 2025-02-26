@@ -514,7 +514,8 @@ function addClipboardListItem(text,item_color,bg_color) {
     listDiv = document.createElement("div"),
     toolsDiv = document.createElement("div"),
     
-    selectDiv = document.createElement("div")
+    selectDiv = document.createElement("div"),
+    copyDiv = document.createElement("div")
     editDiv = document.createElement("div"),
     deleteDiv = document.createElement("div"),
     colorTabsDiv = document.createElement("div"),
@@ -523,6 +524,7 @@ function addClipboardListItem(text,item_color,bg_color) {
     downArrowDiv = document.createElement("div"),
     citDiv = document.createElement("div"),
     
+    copyImage = document.createElement("img"),
     editImage = document.createElement("img"),
     deleteImage = document.createElement("img"),
     textColorImage = document.createElement("img"),
@@ -566,6 +568,7 @@ function addClipboardListItem(text,item_color,bg_color) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.classList.add('checkbox');
+    copyImage.src = './images/flaticons/copy-icon.png';
     editImage.src = './images/flaticons/edit-icon.png';
     deleteImage.src = './images/flaticons/delete-icon.png';
     textColorImage.src = './images/flaticons/text-color-icon.png';
@@ -577,6 +580,7 @@ function addClipboardListItem(text,item_color,bg_color) {
     // summImage.classList.add("summarize");
 
     selectDiv.appendChild(checkbox);
+    copyDiv.appendChild(copyImage);
     editDiv.appendChild(editImage);
     deleteDiv.appendChild(deleteImage);
 
@@ -607,6 +611,7 @@ function addClipboardListItem(text,item_color,bg_color) {
     downArrowDiv.appendChild(downArrowImage);
 
     selectDiv.classList.add("tool-wrapper");
+    copyDiv.classList.add("tool-wrapper");
     editDiv.classList.add("tool-wrapper");
     deleteDiv.classList.add("tool-wrapper");
     colorTabsDiv.classList.add("tool-wrapper");
@@ -615,6 +620,7 @@ function addClipboardListItem(text,item_color,bg_color) {
     upArrowDiv.classList.add("tool-wrapper");
     downArrowDiv.classList.add("tool-wrapper");
     toolsDiv.appendChild(selectDiv);
+    toolsDiv.appendChild(copyDiv);
     toolsDiv.appendChild(editDiv);
     toolsDiv.appendChild(deleteDiv);
     toolsDiv.appendChild(colorTabsDiv);
@@ -626,13 +632,17 @@ function addClipboardListItem(text,item_color,bg_color) {
 
     // 3] Adding tooltips 
 
-    listPara.setAttribute("data-toggle", "tooltip");
-    listPara.setAttribute("data-placement", "bottom");
-    listPara.setAttribute("title", "Click to copy the below text:\n" + text + "\n" + "Word count:\n"+text.split(' ').length);
+    // listPara.setAttribute("data-toggle", "tooltip");
+    // listPara.setAttribute("data-placement", "bottom");
+    // listPara.setAttribute("title", "Click to copy the below text:\n" + text + "\n" + "Word count:\n"+text.split(' ').length);
 
     selectDiv.setAttribute("data-toggle", "tooltip");
     selectDiv.setAttribute("data-placement", "bottom");
     selectDiv.setAttribute("title", "Select Entry");
+
+    copyDiv.setAttribute("data-toggle", "tooltip");
+    copyDiv.setAttribute("data-placement", "bottom");
+    copyDiv.setAttribute("title", "Copy text");
     
     editDiv.setAttribute("data-toggle", "tooltip");
     editDiv.setAttribute("data-placement", "bottom");
@@ -685,6 +695,17 @@ function addClipboardListItem(text,item_color,bg_color) {
     //         });
     //     })
     // })   
+
+    copyDiv.addEventListener('click', (event) => {
+
+        navigator.clipboard.writeText(listPara.textContent)
+            .then(() => {
+                console.log(`Text saved to clipboard`,listPara.textContent);
+            });
+        let x = document.getElementById("snackbar");
+        x.className = "show";
+        setTimeout(function () { x.className = x.className.replace("show", ""); }, 300);
+    })
 
     editDiv.addEventListener("click", (event) => {
         let oldText = listPara.textContent.trim();
@@ -981,39 +1002,6 @@ function addClipboardListItem(text,item_color,bg_color) {
         })
     });
 
-        
-    // This will copy the text when para is clicked:
-    
-    // listDiv.addEventListener('click', (event) => {
-    //     let { textContent } = event.target;
-    //     navigator.clipboard.writeText(textContent)
-    //         .then(() => {
-    //             console.log(`Text saved to clipboard`);
-    //             chrome.storage.sync.get(['lists','listcolor','activeList'], clipboard => {
-    //                 let lists = clipboard.lists;
-    //                 if(lists == undefined)
-    //                     lists = {'Default':[]};
-
-    //                 let activeList = clipboard.activeList;
-    //                 let list = lists[activeList];
-    //                 let colordata = clipboard.listcolor;
-    //                 let index = list.indexOf(textContent);
-                    
-    //                 if (index !== -1)
-    //                     list.splice(index, 1);
-    //                 if(colordata == undefined)
-    //                     colordata={'Default':[]};
-    //                 colordata[activeList].splice(index, 1);
-    //                 list.unshift(textContent);
-    //                 colordata[activeList].unshift("black");
-    //                 _clipboardList.innerHTML = "";
-    //                 chrome.storage.sync.set({ 'lists': lists, 'listcolor': colordata}, () => getClipboardText());
-    //             });
-    //         });
-    //     let x = document.getElementById("snackbar");
-    //     x.className = "show";
-    //     setTimeout(function () { x.className = x.className.replace("show", ""); }, 300);
-    // });
 
     // 5] Other
 
