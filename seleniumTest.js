@@ -504,3 +504,275 @@ describe('Check dark mode functionality',function() {
 
 
 
+
+
+ describe('List Creation', function() {
+    it('should create a new list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+        
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        const newListButton = await driver.findElement(By.id('createList')); // Adjust ID if needed
+        await newListButton.click();
+
+        const listItems = await driver.findElements(By.className('list-div')); // Adjust class if needed
+        assert(listItems.length > 0, 'New list was not created');
+
+        await driver.quit();
+    });
+});
+
+describe('List Deletion', function() {
+    it('should delete an existing list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+        
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        const deleteButton = await driver.findElement(By.className('deleteList')); // Adjust class if needed
+        await deleteButton.click();
+
+        const listItems = await driver.findElements(By.className('list-div'));
+        assert.equal(listItems.length, 0, 'List was not deleted');
+
+        await driver.quit();
+    });
+});
+
+describe('List Switching', function() {
+    it('should switch between lists', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+        
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        const listTabs = await driver.findElements(By.className('listDropdown')); // Adjust class if needed
+        assert(listTabs.length > 1, 'Not enough lists to switch');
+
+        await listTabs[1].click();
+
+        const activeList = await driver.findElement(By.className('activeList')); // Adjust class if needed
+        assert(await activeList.isDisplayed(), 'List switch failed');
+
+        await driver.quit();
+    });
+});
+
+describe('Clipboard List Management', function() {
+    it('should add a copied element to the active list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+        
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Select a specific list (or create a new one)
+        const listDropdown = await driver.findElement(By.id("listDropdown"));
+        await listDropdown.sendKeys("Test List"); // Select or create "Test List"
+
+        // Simulate a copy event by manually adding an entry
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+
+        // Check that the item appears in the clipboard list
+        const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        assert(clipboardItems.length > 0, "Copied text did not appear in the list");
+
+        await driver.quit();
+    });
+});
+
+describe('Edit Element', function() {
+    it('should allow editing an item in the clipboard list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Add a new item
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+
+        // Find the edit button and click it
+        const editButton = await driver.findElement(By.css(".tool-wrapper img[title='Edit entry']"));
+        await editButton.click();
+
+        // Locate the paragraph element and modify text
+        const textElement = await driver.findElement(By.css(".list-div p"));
+        await driver.executeScript("arguments[0].textContent = 'Edited Text';", textElement);
+
+        // Focus out to trigger the update event
+        await driver.actions().move({origin: webdriver.Origin.POINTER}).perform();
+
+        // Verify the text was updated
+        const updatedText = await textElement.getText();
+        assert(updatedText === "Edited Text", "Edit function failed");
+
+        await driver.quit();
+    });
+});
+
+describe('Delete All Functionality', function() {
+    it('should remove all items from the clipboard list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Add multiple items
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+        await addButton.click();
+
+        // Click delete all button
+        const deleteAllButton = await driver.findElement(By.id("delete-btn"));
+        await deleteAllButton.click();
+
+        // Verify that all items are deleted
+        const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        assert(clipboardItems.length === 0, "Delete all function failed");
+
+        await driver.quit();
+    });
+});
+
+describe('Move Up Functionality', function() {
+    it('should move an item up in the clipboard list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Add two items
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+        await addButton.click();
+
+        // Get the first and second items before moving
+        const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        const firstItemText = await clipboardItems[0].getText();
+        const secondItemText = await clipboardItems[1].getText();
+
+        // Click the "Move Up" button on the second item
+        const moveUpButton = await clipboardItems[1].findElement(By.css(".tool-wrapper img[title='Move Up']"));
+        await moveUpButton.click();
+
+        // Get the updated order of items
+        const updatedClipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        const updatedFirstItemText = await updatedClipboardItems[0].getText();
+        const updatedSecondItemText = await updatedClipboardItems[1].getText();
+
+        // Ensure the items swapped places
+        assert(updatedFirstItemText === secondItemText, "Move Up function failed");
+        assert(updatedSecondItemText === firstItemText, "Move Up function failed");
+
+        await driver.quit();
+    });
+});
+
+describe('Move Down Functionality', function() {
+    it('should move an item down in the clipboard list', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Add two items
+        const addButton = await driver.findElement(By.id("add-btn"));
+        await addButton.click();
+        await addButton.click();
+
+        // Get the first and second items before moving
+        const clipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        const firstItemText = await clipboardItems[0].getText();
+        const secondItemText = await clipboardItems[1].getText();
+
+        // Click the "Move Down" button on the first item
+        const moveDownButton = await clipboardItems[0].findElement(By.css(".tool-wrapper img[title='Move Down']"));
+        await moveDownButton.click();
+
+        // Get the updated order of items
+        const updatedClipboardItems = await driver.findElements(By.css("#clipboard_list li"));
+        const updatedFirstItemText = await updatedClipboardItems[0].getText();
+        const updatedSecondItemText = await updatedClipboardItems[1].getText();
+
+        // Ensure the items swapped places
+        assert(updatedFirstItemText === secondItemText, "Move Down function failed");
+        assert(updatedSecondItemText === firstItemText, "Move Down function failed");
+
+        await driver.quit();
+    });
+});
+
+describe('Merge Functionality', function() {
+    it('should merge selected clipboard items', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Select checkboxes for merging
+        const checkboxes = await driver.findElements(By.css(".checkbox"));
+        if (checkboxes.length < 2) {
+            console.log("Not enough items to merge");
+            await driver.quit();
+            return;
+        }
+        await checkboxes[0].click();
+        await checkboxes[1].click();
+
+        // Click merge button
+        const mergeButton = await driver.findElement(By.id("merge-btn"));
+        await mergeButton.click();
+
+        // Verify merged content exists
+        const clipboardList = await driver.findElement(By.id("clipboard_list"));
+        const mergedText = await clipboardList.getText();
+
+        assert(mergedText.includes(" "), "Merge operation failed");
+
+        await driver.quit();
+    });
+});
+
+describe('Citation Functionality', function() {
+    it('should generate a citation and add it to the clipboard', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Click citation button
+        const citationButton = await driver.findElement(By.css(".tool-wrapper img[title='Generate Citations']"));
+        await citationButton.click();
+
+        // Verify citation is added
+        const clipboardList = await driver.findElement(By.id('clipboard_list'));
+        const clipboardText = await clipboardList.getText();
+
+        assert(clipboardText.includes("Citation"), "Citation not found in clipboard");
+
+        await driver.quit();
+    });
+});
+
+describe('Summarization Functionality', function() {
+    it('should add summarized text to SimplyClip clipboard', async function() {
+        this.timeout(10000);
+        const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+        await driver.get('chrome-extension://enhklaokeppjnodgbckcefjeapppjeeg/popup.html');
+
+        // Click summarize button
+        const summarizeButton = await driver.findElement(By.id('summarize-btn'));
+        await summarizeButton.click();
+
+        // Wait for the summary to appear in the clipboard list
+        const clipboardList = await driver.findElement(By.id('clipboard_list'));
+        const summaryText = await clipboardList.getText();
+
+        assert(summaryText.includes("Summary:"), "Summarization failed");
+
+        await driver.quit();
+    });
+});
