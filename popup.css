@@ -6,7 +6,6 @@ body{
     flex-direction: column;
     position: relative;
     width: 400px;
-    border-right: solid;
 }
 
 p{
@@ -547,6 +546,7 @@ ul li {
 .content {
     
     width: 100%; /* Ensure content takes full width */
+    border-radius: 6px;
 }
 
 /* Increase size of the checkbox */
@@ -598,6 +598,8 @@ ul li {
     padding: 6px;
     justify-content: space-between;
     background-color: whitesmoke;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
  }
 
 .tools .tool-wrapper{
