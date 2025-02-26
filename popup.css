@@ -119,12 +119,12 @@ ul li{
   }
 }
 
-.list-div p:hover{
+/* .list-div p:hover{
     background: whitesmoke;
     transform: translateX(1px);
     border: 2px solid black;
     border-radius: 6px;
-}
+} */
 
 /* will dictate css if image is copied into clipboard */
 
