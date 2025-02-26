@@ -295,8 +295,9 @@ Users can download the list of  copied items as a document file or CSV file. The
 ### Phase 6 : Successful Functional Improvements in Simplyclip5.0:
 
 - [x] Implemented multiple list feature to allow users to save and organize text better
-- [x] Optimized UI for viewing copied text and images
-- [x] Fixed issues with text highlighting 
+- [x] Improved UI for list elements, by showing a bigger text window and moving tools to the bottom
+- [x] Added background color feature for easier organization
+- [x] Replaced old icons with modern and style-consistent icons
 
 ### Future Enhancements:
 
