@@ -52,50 +52,24 @@ function doDjangoCall(type, url, data, callback) {
     }
 }
 
-addButton.addEventListener('click', (event) => {
-        let textitem = ''
-        let emptyDiv = document.getElementById('empty-div');
-        let downloadDiv1 = document.getElementById('download-btn1');
-        let downloadDiv2 = document.getElementById('download-btn2');
-        let searchInput = document.getElementById('searchText');
+addButton.addEventListener("click", () => {
+    chrome.storage.sync.get(["lists", "activeList"], (data) => {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
 
+        if (!lists[activeList]) {
+            lists[activeList] = []; // Ensure the active list exists
+        }
 
-        emptyDiv.classList.add('hide-div');
-        downloadDiv1.style.display = 'block';
-        downloadDiv2.style.display = 'block';
-        document.getElementsByClassName('doc')[0].addEventListener('click', (event) => {
-            downloadClipboardTextAsDoc()
-        })
-        document.getElementsByClassName('csv')[0].addEventListener('click', (event) => {
-            downloadClipboardTextAsCsv()
-        })
-        searchInput.style.display = 'block';
-        searchInput.addEventListener('keyup', () => {
-            searchClipboardText();
-        })
-        chrome.storage.sync.get(['list','listcolor'], text => {
-            let list = text.list;
-            let listcolor = text.listcolor;
-            list == undefined && (list = []);
-            list.unshift("");
-            listcolor.unshift("black");
-            chrome.storage.sync.set({ 'list': list, 'listcolor': listcolor  })
-        })
-        chrome.storage.sync.get(['listURL'], url => {
-            let urlList = url.listURL;
-            urlList == undefined && (urlList = []);
-            urlList.unshift("");
-            chrome.storage.sync.set({ 'listURL': urlList })
-        })
-        chrome.storage.sync.get(['originalList'], original => {
-            let originalList = original.originalList;
-            originalList == undefined && (originalList = []);
-            originalList.unshift("");
-            chrome.storage.sync.set({ 'originalList': originalList })
-        })
-        addClipboardListItem(textitem)
-    }
-)
+        lists[activeList].unshift(""); // Add new empty row at the top
+
+        chrome.storage.sync.set({ "lists": lists }, () => {
+            _clipboardList.innerHTML = ""; // Clear UI before reloading
+            getClipboardText(); // Refresh UI with updated list
+        });
+    });
+});
+
 
 
 
@@ -933,41 +907,48 @@ function addClipboardListItem(text,item_color) {
 }
 
 // Add event listener for the new summarization button
-document.getElementById('summarize-btn').addEventListener('click', () => {
-    console.log("Global Summarize button clicked");
+document.getElementById("summarize-btn").addEventListener("click", () => {
+    console.log("Summarize button clicked");
 
-    // Fetch all copied texts
-    chrome.storage.sync.get(['originalList'], data => {
-        let texts = data.originalList || [];
+    chrome.storage.sync.get(["lists", "activeList"], (data) => {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
 
-        if (texts.length === 0) {
-            showSnackbar("No texts to summarize.");
+        if (!lists[activeList] || lists[activeList].length === 0) {
+            showSnackbar("No text to summarize in this list.");
             return;
         }
 
-        // Optional: Show a loading indicator
+        let textsToSummarize = lists[activeList].join(" "); // Merge all text for summarization
+
+        // Optional: Show a loading message
         showSnackbar("Generating summary...");
 
         // Send texts to backend for summarization
         doDjangoCall(
             "POST",
             "http://127.0.0.1:8000/text/summarize_all",
-            { 'texts': JSON.stringify(texts) },
-            function (data) {
-                const summaryText = data;
-
+            { texts: textsToSummarize },
+            function (summaryText) {
                 if (summaryText) {
-                    // Generate and download Word document
-                    downloadSummaryAsDoc(summaryText);
-                    showSnackbar("Summary downloaded as Word document!");
+                    // Save summary in the active list
+                    lists[activeList].unshift(`Summary: ${summaryText}`);
+
+                    // Update storage and refresh UI
+                    chrome.storage.sync.set({ "lists": lists }, () => {
+                        _clipboardList.innerHTML = ""; // Clear UI before reloading
+                        getClipboardText(); // Reload updated list
+                        showSnackbar("Summary added to the list!");
+                    });
                 } else {
-                    console.error('Summarization failed:', data);
-                    showSnackbar('Summarization failed.');
+                    console.error("Summarization failed:", summaryText);
+                    showSnackbar("Summarization failed.");
                 }
             }
         );
     });
 });
+
 
 // Function to download summary as a Word document
 function downloadSummaryAsDoc(summary) {
