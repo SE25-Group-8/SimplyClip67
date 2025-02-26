@@ -292,6 +292,12 @@ Users can download the list of  copied items as a document file or CSV file. The
 - [x] Scrollable texts
 - [x] Fix dark mode to allow better UI
 
+### Phase 6 : Successful Functional Improvements in Simplyclip5.0:
+
+- [x] Implemented multiple list feature to allow users to save and organize text better
+- [x] Optimized UI for viewing copied text and images
+- [x] Fixed issues with text highlighting 
+
 ### Future Enhancements:
 
 - [ ] Cross browser support
