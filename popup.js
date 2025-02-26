@@ -132,8 +132,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Switch active list
     listDropdown.addEventListener("change", function () {
-        chrome.storage.sync.set({ "activeList": listDropdown.value });
+        let newActiveList = listDropdown.value;
+        
+        chrome.storage.sync.set({ "activeList": newActiveList }, function () {
+            _clipboardList.innerHTML = ""; // ✅ Clears the previous list from UI
+            getClipboardText(); // ✅ Reloads the new active list
+        });
     });
+
 
     // Create new list using a prompt
     createListButton.addEventListener("click", function () {
@@ -147,8 +153,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     chrome.storage.sync.set({ "lists": lists, "activeList": newList }, function () {
                         updateDropdown(lists, newList);
                     });
+                } else {
+                    alert("List name already exists!");
                 }
             });
+        } else {
+            alert("Invalid list name!");
         }
     });
 
@@ -162,6 +172,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 chrome.storage.sync.set({ "lists": lists, "activeList": "Default" }, function () {
                     updateDropdown(lists, "Default");
+                    _clipboardList.innerHTML = "";
+                    getClipboardText();
                 });
             });
         }
@@ -179,9 +191,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getClipboardText() {
 
-    chrome.storage.sync.get(['list','listcolor'], clipboard => {
-      let list=clipboard.list;
-      let listcolor=clipboard.listcolor;
+    chrome.storage.sync.get(["lists", "activeList", "listcolor"], clipboard => {
+        let lists = clipboard.lists || { "Default": [] };
+        let activeList = clipboard.activeList || "Default";
+        let listcolor = clipboard.listcolor || {};
+    
+        let list = lists[activeList] || []; // Get the list corresponding to activeList
 
 
         // Fallbacks for undefined lists
@@ -220,16 +235,12 @@ function getClipboardText() {
             deleteAll.addEventListener('click',() => {
                 deleteAllText();
             })
-            if (typeof list !== undefined)
-                list.forEach(item => {
-                    indexOfItem = list.indexOf(item);
-                    if (typeof listcolor !== 'undefined' && typeof listcolor[indexOfItem] !== 'undefined') {
-                        color = listcolor[indexOfItem];
-                      } else {
-                        color = 'black';
-                      }
-                    addClipboardListItem(item,color);
+            if (Array.isArray(list)) {
+                list.forEach((item, index) => {
+                    let color = (listcolor[activeList] && listcolor[activeList][index]) || 'black';
+                    addClipboardListItem(item, color);
                 });
+            }
 
                
         }
