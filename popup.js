@@ -152,6 +152,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     lists[newList] = [];
                     chrome.storage.sync.set({ "lists": lists, "activeList": newList }, function () {
                         updateDropdown(lists, newList);
+                        _clipboardList.innerHTML = "";
+                        getClipboardText();
                     });
                 } else {
                     alert("List name already exists!");
@@ -1028,71 +1030,48 @@ function deleteElem(text){
         chrome.storage.sync.set({ 'list': list , 'listcolor': colordata}, () => getClipboardText());
     })
 }
+
 let merging = document.getElementById("merge-btn");
-merging.addEventListener('click', () => {
-    merged_data = "";
-    const checkboxes = document.getElementsByClassName('checkbox');
-    const data = document.getElementsByClassName('data');
-    const list1 = document.getElementsByClassName('listitem');
-    const del = document.getElementsByClassName('delete');
-    const indexes = []
-    for (var i=0; i<checkboxes.length; i++){
-        if (checkboxes[i].checked){
-            merged_data += " " + (data[i].innerText);
-            indexes.push(i)
+merging.addEventListener("click", () => {
+    chrome.storage.sync.get(["lists", "activeList"], function (data) {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
+
+        let merged_data = "";
+        const checkboxes = document.getElementsByClassName("checkbox");
+        const dataElements = document.getElementsByClassName("data");
+        const listItems = document.getElementsByClassName("listitem");
+        const indexes = [];
+
+        // Collect selected items
+        for (let i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                merged_data += " " + dataElements[i].innerText;
+                indexes.push(i);
+            }
         }
-    }
 
-    for(var i = indexes.length-1; i>=0; i--){
-        chrome.storage.sync.get(['list'], clipboard => {
-            let list = clipboard.list;
-            list.splice(indexes[i], 1);
-            console.log(list)
-            chrome.storage.sync.get(['listURL'], url => {
-                let urlList = url.listURL;
-                urlList.splice(indexes[i],1);
-                chrome.storage.sync.set({ 'listURL': urlList })
-            })
-            chrome.storage.sync.get(['originalList'], original => {
-                let originalList = original.originalList;
-                originalList == undefined && (originalList = []);
-                originalList.splice(indexes[i], 1);
-                chrome.storage.sync.set({ 'originalList': originalList })
-            })
-            chrome.storage.sync.get(['summarizedList'], summList => {
-                let summarizedList = summList.summarizedList;
-                summarizedList == undefined && (summarizedList = []);
-                summarizedList.splice(indexes[i], 1);
-                chrome.storage.sync.set({ 'summarizedList': summarizedList })
-            })
-            chrome.storage.sync.set({ 'list': list });
-        })
-        list1[indexes[i]].remove();
+        if (merged_data.trim() === "") {
+            alert("No items selected for merging!");
+            return;
+        }
 
-    }
-    console.log(merged_data)
-    addClipboardListItem(merged_data)
-    chrome.storage.sync.get(['list'], clipboard => {
-        let list = clipboard.list;
-        list == undefined && (list = []);
-        list.unshift(merged_data);
-        _clipboardList.innerHTML = "";
-        chrome.storage.sync.get(['listURL'], url => {
-            let urlList = url.listURL;
-            urlList == undefined && (urlList = []);
-            urlList.unshift("Merged");
-            chrome.storage.sync.set({ 'listURL': urlList })
-        })
-        chrome.storage.sync.get(['originalList'], original => {
-            let originalList = original.originalList;
-            originalList == undefined && (originalList = []);
-            originalList.unshift(merged_data);
-            chrome.storage.sync.set({ 'originalList': originalList })
-        })
-        chrome.storage.sync.set({ 'list': list }, () => getClipboardText());
-    })
-    // getClipboardText(list)
-})
+        // Remove merged items from the active list
+        indexes.reverse().forEach(index => {
+            lists[activeList].splice(index, 1);
+            listItems[index].remove(); // Remove from UI
+        });
+
+        // Add merged text to the active list
+        lists[activeList].unshift(merged_data);
+
+        // Save the updated list and refresh UI
+        chrome.storage.sync.set({ "lists": lists }, function () {
+            _clipboardList.innerHTML = ""; // Clear UI
+            getClipboardText(); // Reload updated list
+        });
+    });
+});
 
 /**
  * Retrives the copied text from the storage ,
@@ -1272,13 +1251,20 @@ function downloadClipboardTextAsCsv() {
  * deleteAllText()
  */
 function deleteAllText() {
-    chrome.storage.sync.set({ 'list': [] }, () => {});
-    chrome.storage.sync.set({ 'originalList': [] }, () => {});
-    chrome.storage.sync.set({ 'listURL': [] }, () => {});
-    getClipboardText();
-    var ul = document.getElementById("clipboard_list");
-    ul.innerHTML = "";
+    chrome.storage.sync.get(["lists", "activeList"], function (data) {
+        let lists = data.lists || { "Default": [] };
+        let activeList = data.activeList || "Default";
+
+        // Clear only the active list
+        lists[activeList] = [];
+
+        chrome.storage.sync.set({ "lists": lists }, function () {
+            _clipboardList.innerHTML = ""; // Clear UI
+            getClipboardText(); // Reload empty list view
+        });
+    });
 }
+
 
 /*
  * Switching to Dark Mode or ligth mode
