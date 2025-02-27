@@ -48,7 +48,7 @@
 ---
 # Description
 
-SimplyClip4.0 :paperclips: is a google chrome extension which enables singular shared clipboard for research students and power users. Unlimited focus!!!
+SimplyClip6.0 :paperclips: is a google chrome extension which enables singular shared clipboard for research students and power users. Unlimited focus!!!
  
  ## :white_check_mark: What Simply Clip Can Do?
 
@@ -114,8 +114,8 @@ https://user-images.githubusercontent.com/66715000/139998327-13eff7db-3375-4a1b-
 ## Demo
 
 [https://youtu.be/sR3Q3ZVW0vo](https://www.youtube.com/watch?v=sR3Q3ZVW0vo)
-<h2> FALL 2024 ENHANCEMENTS </h2>
-[https://youtu.be/T23S49qEtx4](https://youtube.com/watch?v=T23S49qEtx4)
+<h2> SPRING 2025 ENHANCEMENTS </h2>
+[https://drive.google.com/file/d/18K2wnuH5q0qV2gUrtXfNSzuHqdspXBSO/view?usp=sharing](https://drive.google.com/file/d/18K2wnuH5q0qV2gUrtXfNSzuHqdspXBSO/view?usp=sharing)
 
 ---
 
@@ -302,8 +302,8 @@ Users can download the list of  copied items as a document file or CSV file. The
 ### Future Enhancements:
 
 - [ ] Cross browser support
-- [ ] Shortcut optimization
-- [ ] API Integration
+- [ ] Settings Tab - There are a lot of available tools. A settings tab can allow the user to enable or diasable the tools they actually use
+- [ ] Code Refactoring - The project has had a lot of contributors and the code is not super readable. Refactoring into modular features will make it easy for future enhancements
  
 ---
 ## :handshake: Contributors
@@ -311,7 +311,7 @@ Users can download the list of  copied items as a document file or CSV file. The
   <tr>
     <td align="center"><a href="https://github.com/atharvapatil22"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Atharva Patil</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/akhiladusumilli100"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Akhil Adusumilli</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/ryangallagher35"><img src="https://avatars.githubusercontent.com/u/32798037?v=4" width="75px;" alt=""/><br /><sub><b>Ryan Gallagher</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/ryangallagher35"><img src="https://avatars.githubusercontent.com/u/26276595?v=4" width="75px;" alt=""/><br /><sub><b>Ryan Gallagher</b></sub></a><br /></td>
   </tr>
 </table>
 
